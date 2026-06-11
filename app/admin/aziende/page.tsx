@@ -13,6 +13,8 @@ const [newCity, setNewCity] = useState("");
 const [newCategory, setNewCategory] = useState("");
 const [newSubcategory, setNewSubcategory] = useState("");
 
+const [editingCompanyId, setEditingCompanyId] = useState<string | null>(null);
+
   useEffect(() => {
     loadCompanies();
   }, []);
@@ -25,12 +27,52 @@ const [newSubcategory, setNewSubcategory] = useState("");
       .replace(/[^a-z0-9-]/g, "");
   };
   
+  const editCompany = (company: any) => {
+    setEditingCompanyId(company.id);
+    setNewName(company.name || "");
+    setNewPhone(company.phone || "");
+    setNewCity(company.city || "");
+    setNewCategory(company.category || "");
+    setNewSubcategory(company.description || "");
+  };
+
+  const updateCompany = async () => {
+    if (!editingCompanyId) return;
+
+    const { error } = await supabase
+      .from("companies")
+      .update({
+        name: newName,
+        phone: newPhone,
+        city: newCity,
+        category: newCategory,
+        description: newSubcategory,
+      })
+      .eq("id", editingCompanyId);
+
+    if (error) {
+      alert(error.message);
+      return;
+    }
+
+    alert("Azienda aggiornata.");
+
+    setEditingCompanyId(null);
+    setNewName("");
+    setNewPhone("");
+    setNewCity("");
+    setNewCategory("");
+    setNewSubcategory("");
+
+    loadCompanies();
+  };
+
   const createCompany = async () => {
     if (!newName.trim()) {
       alert("Inserisci il nome azienda.");
       return;
     }
-  
+
     const { error } = await supabase.from("companies").insert({
       name: newName,
       slug: createSlug(newName),
@@ -129,11 +171,17 @@ const [newSubcategory, setNewSubcategory] = useState("");
   </div>
 
   <button
-    onClick={createCompany}
-    className="mt-6 bg-black text-white px-6 py-3 rounded-xl"
-  >
-    Aggiungi azienda
-  </button>
+  onClick={
+    editingCompanyId
+      ? updateCompany
+      : createCompany
+  }
+  className="mt-6 bg-black text-white px-6 py-3 rounded-xl"
+>
+  {editingCompanyId
+    ? "Salva modifiche"
+    : "Aggiungi azienda"}
+</button>
 </div>
 
         <div className="mt-8">
@@ -179,9 +227,12 @@ const [newSubcategory, setNewSubcategory] = useState("");
                     Vedi profilo
                   </a>
 
-                  <button className="px-5 py-3 bg-black text-white rounded-xl">
-                    Modifica
-                  </button>
+                  <button
+  onClick={() => editCompany(company)}
+  className="px-5 py-3 bg-black text-white rounded-xl"
+>
+  Modifica
+</button>
                 </div>
               </div>
             ))

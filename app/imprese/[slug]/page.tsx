@@ -144,60 +144,130 @@ setImages(imageData || []);
 
   return (
     <main className="min-h-screen bg-white text-black">
-      <section className="max-w-5xl mx-auto px-6 py-12">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-5xl font-bold">
-              {company.name}
-            </h1>
+<section className="max-w-6xl mx-auto px-6 py-12">
+  <div className="grid lg:grid-cols-[1fr_340px] gap-8 items-start">
+    <div>
+      <div className="flex flex-wrap items-center gap-3">
+        <span className="text-sm border rounded-full px-3 py-1 text-gray-600">
+          {company.province || "FVG"}
+        </span>
 
-            <p className="mt-4 text-gray-600">
-              {company.category} · {company.city}
-            </p>
+        <span className="text-sm border rounded-full px-3 py-1 text-gray-600">
+          {company.category || "Categoria non indicata"}
+        </span>
 
-            <p className="mt-2">
-              ⭐ {company.average_rating ?? 0} ·{" "}
-              {company.review_count ?? 0} recensioni
-            </p>
-          </div>
+        {company.verified && (
+          <span className="text-sm bg-black text-white rounded-full px-3 py-1">
+            Verificata
+          </span>
+        )}
+      </div>
 
-          <a
-  href="#preventivo"
-  className="bg-black text-white px-6 py-4 rounded-2xl"
->
-  Richiedi preventivo
-  
-</a>
-{user && !claimSent && (
-  <button
-    onClick={submitClaimRequest}
-    className="border px-6 py-4 rounded-2xl"
-  >
-    Rivendica questa azienda
-  </button>
-)}
-        </div>
+      <h1 className="mt-6 text-4xl md:text-6xl font-bold leading-tight">
+        {company.name}
+      </h1>
 
-        <div className="mt-10">
-  {images.length > 0 ? (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      {images.map((image) => (
-        <img
-          key={image.id}
-          src={image.image_url}
-          alt="Foto azienda"
-          className="w-full h-[300px] object-cover rounded-3xl"
-        />
-      ))}
-      
+      <p className="mt-4 text-lg text-gray-600">
+        {company.city || "Città non indicata"} · Friuli Venezia Giulia
+      </p>
+
+      <p className="mt-3 text-gray-700">
+        ⭐ {company.average_rating ?? 0} ·{" "}
+        {company.review_count ?? 0} recensioni
+      </p>
+
+      <div className="mt-8 flex flex-wrap gap-3">
+        <a
+          href="#preventivo"
+          className="bg-black text-white px-6 py-4 rounded-2xl"
+        >
+          Richiedi preventivo
+        </a>
+
+        {user && !claimSent && (
+          <button
+            onClick={submitClaimRequest}
+            className="border px-6 py-4 rounded-2xl"
+          >
+            Rivendica questa azienda
+          </button>
+        )}
+      </div>
     </div>
-    
-  ) : (
-    <div className="h-[400px] bg-gray-200 rounded-3xl flex items-center justify-center text-gray-500">
-      Nessuna immagine caricata
-    </div>
-  )}
-</div>
+
+    <aside className="border rounded-3xl p-6 bg-white shadow-sm">
+      <h2 className="text-xl font-semibold">
+        Informazioni azienda
+      </h2>
+
+      <div className="mt-5 space-y-4 text-sm text-gray-700">
+        {company.phone && (
+          <p>
+            <span className="font-medium text-black">Telefono:</span>{" "}
+            {company.phone}
+          </p>
+        )}
+
+        {company.email && (
+          <p>
+            <span className="font-medium text-black">Email:</span>{" "}
+            {company.email}
+          </p>
+        )}
+
+        {company.website && (
+          <p>
+            <span className="font-medium text-black">Sito web:</span>{" "}
+            <a
+              href={
+                company.website.startsWith("http")
+                  ? company.website
+                  : `https://${company.website}`
+              }
+              target="_blank"
+              className="underline"
+            >
+              Visita sito
+            </a>
+          </p>
+        )}
+
+        <p>
+          <span className="font-medium text-black">Città:</span>{" "}
+          {company.city || "Non indicata"}
+        </p>
+
+        <p>
+          <span className="font-medium text-black">Provincia:</span>{" "}
+          {company.province || "Non indicata"}
+        </p>
+
+        <p>
+          <span className="font-medium text-black">Categoria:</span>{" "}
+          {company.category || "Non indicata"}
+        </p>
+      </div>
+    </aside>
+  </div>
+
+  <div className="mt-10">
+    {images.length > 0 ? (
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {images.map((image) => (
+          <img
+            key={image.id}
+            src={image.image_url}
+            alt="Foto azienda"
+            className="w-full h-[300px] object-cover rounded-3xl"
+          />
+        ))}
+      </div>
+    ) : (
+      <div className="h-[320px] bg-gray-100 rounded-3xl flex items-center justify-center text-gray-500 border">
+        Nessuna immagine caricata
+      </div>
+    )}
+  </div>
 
         <div className="mt-12">
           <h2 className="text-2xl font-semibold">

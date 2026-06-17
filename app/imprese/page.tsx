@@ -8,6 +8,7 @@ export default function CompaniesPage() {
   const [search, setSearch] = useState("");
   const [city, setCity] = useState("");
   const [category, setCategory] = useState("");
+  const [province, setProvince] = useState("");
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -23,7 +24,7 @@ export default function CompaniesPage() {
   const loadCompanies = async () => {
     const { data, error } = await supabase
       .from("companies")
-      .select("id, name, slug, category, city, average_rating, review_count, verified")
+      .select("id, name, slug, category, city, province, description, average_rating, review_count, verified")
       .order("created_at", { ascending: false });
 
     if (error) {
@@ -35,17 +36,20 @@ export default function CompaniesPage() {
   };
 
   const filteredCompanies = companies.filter((company) => {
-    const text = `${company.name} ${company.category} ${company.city}`.toLowerCase();
+    const text = `${company.name} ${company.category} ${company.city} ${company.province} ${company.description}`.toLowerCase();
 
     const matchesSearch = text.includes(search.toLowerCase());
     const matchesCity = city
       ? company.city?.toLowerCase().includes(city.toLowerCase())
       : true;
+      const matchesProvince = province
+  ? company.province === province
+  : true;
     const matchesCategory = category
       ? company.category === category
       : true;
 
-    return matchesSearch && matchesCity && matchesCategory;
+    return matchesSearch && matchesCity && matchesProvince && matchesCategory;
   });
 
   return (
@@ -57,7 +61,7 @@ export default function CompaniesPage() {
           Trova imprese edili recensite in Friuli Venezia Giulia.
         </p>
 
-        <div className="mt-8 grid gap-4 md:grid-cols-3">
+        <div className="mt-8 grid gap-4 md:grid-cols-4">
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -71,7 +75,17 @@ export default function CompaniesPage() {
             className="border rounded-xl px-4 py-3"
             placeholder="Città"
           />
-
+<select
+  value={province}
+  onChange={(e) => setProvince(e.target.value)}
+  className="border rounded-xl px-4 py-3"
+>
+  <option value="">Tutte le province</option>
+  <option value="Trieste">Trieste</option>
+  <option value="Udine">Udine</option>
+  <option value="Gorizia">Gorizia</option>
+  <option value="Pordenone">Pordenone</option>
+</select>
           <select
             value={category}
             onChange={(e) => setCategory(e.target.value)}
@@ -106,9 +120,13 @@ export default function CompaniesPage() {
                   </div>
 
                   <p className="mt-2 text-gray-600">
-                    {company.category} · {company.city}
+                    {company.category} · {company.city} · {company.province}
                   </p>
-
+                  {company.description && (
+  <p className="mt-2 text-sm text-gray-500">
+    {company.description}
+  </p>
+)}
                   <p className="mt-2 text-sm text-gray-500">
                     ⭐ {company.average_rating ?? 0} ·{" "}
                     {company.review_count ?? 0} recensioni

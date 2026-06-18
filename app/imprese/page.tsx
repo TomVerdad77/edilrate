@@ -3,8 +3,21 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/src/lib/supabase";
 
+type Company = {
+  id: string;
+  name: string;
+  slug: string;
+  category: string;
+  city: string;
+  province: string;
+  description: string | null;
+  average_rating: number | null;
+  review_count: number | null;
+  verified: boolean;
+};
+
 export default function CompaniesPage() {
-  const [companies, setCompanies] = useState<any[]>([]);
+  const [companies, setCompanies] = useState<Company[]>([]);
   const [search, setSearch] = useState("");
   const [city, setCity] = useState("");
   const [category, setCategory] = useState("");
@@ -42,16 +55,24 @@ export default function CompaniesPage() {
     const matchesCity = city
       ? company.city?.toLowerCase().includes(city.toLowerCase())
       : true;
+
       const matchesProvince = province
-  ? company.province === province
+  ? company.province?.toLowerCase().trim() === province.toLowerCase().trim()
   : true;
-    const matchesCategory = category
-      ? company.category === category
-      : true;
+
+  const matchesCategory = category
+  ? company.category?.toLowerCase().trim() === category.toLowerCase().trim()
+  : true;
 
     return matchesSearch && matchesCity && matchesProvince && matchesCategory;
   });
 
+  const sortedCompanies = [...filteredCompanies].sort(
+    (a, b) => (b.review_count || 0) - (a.review_count || 0)
+  );
+const availableCategories = Array.from(
+  new Set(companies.map((company) => company.category).filter(Boolean))
+);
   return (
     <main className="min-h-screen bg-white text-black">
       <section className="max-w-7xl mx-auto px-6 py-12">
@@ -66,8 +87,7 @@ export default function CompaniesPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="border rounded-xl px-4 py-3"
-            placeholder="Cerca impresa, categoria o città..."
-          />
+            placeholder="Cerca azienda, categoria o servizio..."         />
 
           <input
             value={city}
@@ -86,34 +106,40 @@ export default function CompaniesPage() {
   <option value="Gorizia">Gorizia</option>
   <option value="Pordenone">Pordenone</option>
 </select>
-          <select
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            className="border rounded-xl px-4 py-3"
-          >
-            <option value="">Tutte le categorie</option>
-            <option value="Ristrutturazioni">Ristrutturazioni</option>
-            <option value="Muratori">Muratori</option>
-            <option value="Idraulici">Idraulici</option>
-            <option value="Elettricisti">Elettricisti</option>
-            <option value="Serramenti">Serramenti</option>
-            <option value="Imbianchini">Imbianchini</option>
-          </select>
+<select
+  value={category}
+  onChange={(e) => setCategory(e.target.value)}
+  className="border rounded-xl px-4 py-3"
+>
+  <option value="">Tutte le categorie</option>
+
+  {availableCategories.map((cat) => (
+    <option key={cat} value={cat}>
+      {cat}
+    </option>
+  ))}
+</select>
         </div>
 
-        <div className="mt-10 grid gap-6">
+        <div className="mt-10">
+  <p className="text-gray-600 mb-6">
+    {filteredCompanies.length} aziende trovate
+  </p>
+
+  <div className="grid gap-6">
           {filteredCompanies.length > 0 ? (
-            filteredCompanies.map((company) => (
-              <div
+            sortedCompanies.map((company) => (             <div
                 key={company.id}
                 className="border rounded-3xl p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-6 hover:shadow-md transition"
               >
                 <div>
-                  <div className="flex items-center gap-3">
-                    <h2 className="text-2xl font-semibold">{company.name}</h2>
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-3xl font-semibold">
+                      {company.name}
+                      </h2>
 
                     {company.verified && (
-                      <span className="text-xs border px-2 py-1 rounded-full">
+                      <span className="text-xs bg-black text-white px-2 py-1 rounded-full">
                         Verificata
                       </span>
                     )}
@@ -155,6 +181,7 @@ export default function CompaniesPage() {
               Nessuna impresa trovata.
             </div>
           )}
+        </div>
         </div>
       </section>
     </main>

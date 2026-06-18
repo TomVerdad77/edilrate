@@ -192,41 +192,92 @@ export default function Home() {
   <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
     <div className="border rounded-3xl p-8 text-center bg-white shadow-sm">
       <div className="text-4xl font-bold">
-        150+
+        200+
       </div>
 
       <p className="mt-3 text-gray-600">
-        Imprese registrate
+        Aziende presenti
       </p>
     </div>
 
     <div className="border rounded-3xl p-8 text-center bg-white shadow-sm">
       <div className="text-4xl font-bold">
-        1.2k+
+        4
       </div>
 
       <p className="mt-3 text-gray-600">
-        Recensioni pubblicate
+        Province coperte
       </p>
     </div>
 
     <div className="border rounded-3xl p-8 text-center bg-white shadow-sm">
       <div className="text-4xl font-bold">
-        320+
+        FVG
       </div>
 
       <p className="mt-3 text-gray-600">
-        Preventivi inviati
+        Focus regionale
       </p>
     </div>
 
     <div className="border rounded-3xl p-8 text-center bg-white shadow-sm">
       <div className="text-4xl font-bold">
-        4.9⭐
+        100%
       </div>
 
       <p className="mt-3 text-gray-600">
-        Valutazione media
+        Gratuito per iniziare
+      </p>
+    </div>
+  </div>
+</section>
+
+{/* COME FUNZIONA */}
+<section className="max-w-7xl mx-auto px-6 pb-24">
+  <div className="text-center">
+    <h2 className="text-4xl font-bold">
+      Come funziona
+    </h2>
+
+    <p className="mt-4 text-gray-600">
+      Trova l'impresa giusta in pochi minuti.
+    </p>
+  </div>
+
+  <div className="mt-14 grid md:grid-cols-3 gap-6">
+    <div className="border rounded-3xl p-8">
+      <div className="text-4xl">🔍</div>
+
+      <h3 className="mt-6 text-xl font-semibold">
+        Cerca un'impresa
+      </h3>
+
+      <p className="mt-3 text-gray-600">
+        Cerca per città, categoria o servizio.
+      </p>
+    </div>
+
+    <div className="border rounded-3xl p-8">
+      <div className="text-4xl">⭐</div>
+
+      <h3 className="mt-6 text-xl font-semibold">
+        Confronta le aziende
+      </h3>
+
+      <p className="mt-3 text-gray-600">
+        Consulta profili, recensioni e informazioni utili.
+      </p>
+    </div>
+
+    <div className="border rounded-3xl p-8">
+      <div className="text-4xl">📩</div>
+
+      <h3 className="mt-6 text-xl font-semibold">
+        Richiedi un preventivo
+      </h3>
+
+      <p className="mt-3 text-gray-600">
+        Contatta direttamente l'impresa più adatta al tuo progetto.
       </p>
     </div>
   </div>

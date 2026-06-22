@@ -37,6 +37,7 @@ const categories = [
 export default function Home() { 
   const [user, setUser] = useState<any>(null);
   const [search, setSearch] = useState("");
+  const [featuredCompanies, setFeaturedCompanies] = useState<any[]>([]);
   useEffect(() => {
     const getUser = async () => {
       const {
@@ -47,7 +48,22 @@ export default function Home() {
     };
 
     getUser();
+    loadFeaturedCompanies();
   }, []);   
+  const loadFeaturedCompanies = async () => {
+    const { data, error } = await supabase
+      .from("companies")
+      .select("id, name, slug, city, province, category, description, average_rating, review_count, verified")
+      .order("created_at", { ascending: false })
+      .limit(3);
+  
+    if (error) {
+      console.log(error.message);
+      return;
+    }
+  
+    setFeaturedCompanies(data || []);
+  };
   const loginWithGoogle = async () => {
     await supabase.auth.signInWithOAuth({
       provider: "google",
@@ -362,14 +378,14 @@ export default function Home() {
 
       {/* FEATURED COMPANIES */}
 <section className="max-w-7xl mx-auto px-6 pb-28">
-  <div className="flex items-center justify-between mb-10">
+  <div className="flex items-center justify-between gap-6 mb-10">
     <div>
       <h2 className="text-4xl font-bold">
-        Imprese in evidenza
+        Aziende in evidenza
       </h2>
 
       <p className="mt-3 text-gray-600">
-        Aziende selezionate con ottime recensioni.
+        Alcune imprese già presenti su EdilRate.
       </p>
     </div>
 
@@ -384,53 +400,66 @@ export default function Home() {
   <div className="grid md:grid-cols-3 gap-6 md:gap-8">
     {featuredCompanies.map((company) => (
       <div
-        key={company.name}
-        className="group border rounded-3xl md:rounded-[28px] overflow-hidden hover:shadow-2xl transition duration-300 bg-white"
+        key={company.id}
+        className="group border rounded-3xl md:rounded-[28px] overflow-hidden hover:shadow-2xl transition duration-300 bg-white flex flex-col"
       >
-        <div className="relative">
-        <div className="h-48 md:h-56 bg-gradient-to-br from-gray-200 to-gray-300" />
-
-          <div className="absolute top-4 left-4 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-sm font-medium">
-            ⭐ {company.rating}
-          </div>
+        <div className="h-48 md:h-56 bg-gradient-to-br from-gray-100 to-gray-300 flex items-center justify-center text-gray-500">
+          EdilRate
         </div>
 
-        <div className="p-5 md:p-7">
+        <div className="p-5 md:p-7 flex flex-col flex-1">
           <div className="flex items-start justify-between gap-4">
             <div>
-            <h3 className="text-xl md:text-2xl font-semibold leading-tight">
+              <h3 className="text-xl md:text-2xl font-semibold leading-tight">
                 {company.name}
               </h3>
 
               <p className="mt-2 text-gray-600">
-                {company.category}
+                {company.category || "Categoria non indicata"}
               </p>
 
               <p className="mt-1 text-sm text-gray-500">
-                📍 {company.city}
+                📍 {company.city || "Città non indicata"} · {company.province || "FVG"}
               </p>
             </div>
 
-            <div className="border rounded-full px-3 py-1 text-xs">
-              Verificata
-            </div>
+            {company.verified && (
+              <div className="border rounded-full px-3 py-1 text-xs">
+                Verificata
+              </div>
+            )}
           </div>
 
-          <div className="mt-6 md:mt-8 flex flex-col sm:flex-row gap-3">
-            <button className="flex-1 border py-3 rounded-2xl hover:bg-gray-100 transition">
-              Profilo
-            </button>
+          {company.description && (
+            <p className="mt-4 text-sm text-gray-500 line-clamp-2">
+              {company.description}
+            </p>
+          )}
 
-            <button className="flex-1 bg-black text-white py-3 rounded-2xl hover:bg-gray-800 transition">
+          <p className="mt-5 text-sm text-gray-500">
+            ⭐ {company.average_rating ?? 0} · {company.review_count ?? 0} recensioni
+          </p>
+
+          <div className="mt-auto pt-6 flex flex-col sm:flex-row gap-3">
+            <a
+              href={`/imprese/${company.slug}`}
+              className="flex-1 border py-3 rounded-2xl hover:bg-gray-100 transition text-center"
+            >
+              Profilo
+            </a>
+
+            <a
+              href={`/imprese/${company.slug}#preventivo`}
+              className="flex-1 bg-black text-white py-3 rounded-2xl hover:bg-gray-800 transition text-center"
+            >
               Preventivo
-            </button>
+            </a>
           </div>
         </div>
       </div>
     ))}
   </div>
 </section>
-
       {/* FOOTER */}
       <footer className="border-t">
         <div className="max-w-7xl mx-auto px-6 py-10 flex flex-col md:flex-row justify-between gap-6">

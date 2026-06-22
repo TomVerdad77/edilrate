@@ -464,39 +464,6 @@ export default function Home() {
     ))}
   </div>
 </section>
-      {/* FOOTER */}
-      <footer className="border-t">
-        <div className="max-w-7xl mx-auto px-6 py-10 flex flex-col md:flex-row justify-between gap-6">
-          <div>
-            <h3 className="font-bold text-xl">
-              EdilRate
-            </h3>
-
-            <p className="text-gray-500 mt-2">
-              La piattaforma di recensioni per
-              imprese edili del Friuli Venezia Giulia.
-            </p>
-          </div>
-
-          <div className="flex flex-wrap gap-6 text-sm">
-  <a href="/privacy" className="hover:text-gray-600 transition">
-    Privacy
-  </a>
-
-  <a href="/termini" className="hover:text-gray-600 transition">
-    Termini
-  </a>
-
-  <a href="/contatti" className="hover:text-gray-600 transition">
-    Contatti
-  </a>
-
-  <a href="/feedback" className="hover:text-gray-600 transition">
-    Feedback
-  </a>
-</div>
-        </div>
-      </footer>
       <Footer />
     </main>
   );

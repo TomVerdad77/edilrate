@@ -1,62 +1,118 @@
+import Footer from "@/components/Footer";
 export default function TerminiPage() {
-    return (
-      <main className="min-h-screen bg-white text-black">
-        <section className="max-w-4xl mx-auto px-6 py-16">
-          <h1 className="text-4xl font-bold">Termini di servizio</h1>
-  
-          <p className="mt-4 text-gray-600">
-            Questi termini regolano l’utilizzo della piattaforma EdilRate.
-          </p>
-  
-          <div className="mt-10 space-y-8 text-gray-700 leading-7">
-            <section>
-              <h2 className="text-2xl font-semibold text-black">Uso della piattaforma</h2>
-              <p className="mt-3">
-                EdilRate consente agli utenti di cercare imprese edili, leggere
-                recensioni, inviare richieste di preventivo e pubblicare feedback.
-              </p>
-            </section>
-  
-            <section>
-              <h2 className="text-2xl font-semibold text-black">Recensioni</h2>
-              <p className="mt-3">
-                Gli utenti sono responsabili dei contenuti pubblicati. Non sono
-                consentite recensioni false, offensive, diffamatorie o non basate
-                su esperienze reali.
-              </p>
-            </section>
-  
-            <section>
-              <h2 className="text-2xl font-semibold text-black">Profili aziendali</h2>
-              <p className="mt-3">
-                Le imprese possono richiedere la gestione del proprio profilo.
-                EdilRate può verificare, approvare, modificare o rimuovere profili
-                e contenuti non conformi.
-              </p>
-            </section>
-  
-            <section>
-              <h2 className="text-2xl font-semibold text-black">Richieste di preventivo</h2>
-              <p className="mt-3">
-                EdilRate facilita il contatto tra utenti e imprese, ma non è parte
-                del rapporto contrattuale tra cliente e azienda.
-              </p>
-            </section>
-  
-            <section>
-              <h2 className="text-2xl font-semibold text-black">Limitazione di responsabilità</h2>
-              <p className="mt-3">
-                EdilRate non garantisce la qualità, disponibilità o correttezza dei
-                servizi offerti dalle imprese presenti sulla piattaforma.
-              </p>
-            </section>
-  
-            <p className="text-sm text-gray-500">
-              Nota: questa è una bozza iniziale e dovrà essere revisionata prima
-              del lancio pubblico.
+  return (
+    <main className="min-h-screen bg-white text-black">
+      <section className="max-w-5xl mx-auto px-6 py-20">
+        <h1 className="text-5xl font-bold">Termini di servizio</h1>
+
+        <p className="mt-6 text-gray-600">
+          Ultimo aggiornamento: giugno 2026
+        </p>
+
+        <div className="mt-12 space-y-10 text-gray-700 leading-relaxed">
+          <section>
+            <h2 className="text-2xl font-semibold text-black">
+              1. Uso della piattaforma
+            </h2>
+            <p className="mt-4">
+              EdilRate consente agli utenti di cercare imprese edili, consultare
+              profili aziendali, leggere e pubblicare recensioni, inviare
+              richieste di preventivo e fornire feedback sul servizio.
             </p>
-          </div>
-        </section>
-      </main>
-    );
-  }
+          </section>
+
+          <section>
+            <h2 className="text-2xl font-semibold text-black">
+              2. Account utente
+            </h2>
+            <p className="mt-4">
+              Gli utenti possono accedere tramite provider esterni come Google
+              o Facebook. L’utente è responsabile dell’uso del proprio account
+              e delle attività svolte tramite esso.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-2xl font-semibold text-black">
+              3. Recensioni
+            </h2>
+            <p className="mt-4">
+              Le recensioni devono essere basate su esperienze reali, espresse
+              in modo corretto e non offensivo. Non sono consentiti contenuti
+              falsi, diffamatori, discriminatori, promozionali o contrari alla
+              legge.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-2xl font-semibold text-black">
+              4. Profili aziendali
+            </h2>
+            <p className="mt-4">
+              Le aziende possono richiedere la rivendicazione del proprio
+              profilo. EdilRate si riserva la possibilità di approvare,
+              rifiutare, modificare o rimuovere profili e contenuti non
+              conformi.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-2xl font-semibold text-black">
+              5. Richieste di preventivo
+            </h2>
+            <p className="mt-4">
+              EdilRate facilita il contatto tra utenti e imprese, ma non è parte
+              del rapporto contrattuale tra cliente e azienda. Eventuali accordi,
+              preventivi, lavori o pagamenti avvengono direttamente tra le parti.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-2xl font-semibold text-black">
+              6. Responsabilità
+            </h2>
+            <p className="mt-4">
+              EdilRate non garantisce la qualità, disponibilità, correttezza o
+              affidabilità dei servizi offerti dalle imprese presenti sulla
+              piattaforma. L’utente è invitato a valutare autonomamente ogni
+              impresa prima di affidare un incarico.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-2xl font-semibold text-black">
+              7. Contenuti e moderazione
+            </h2>
+            <p className="mt-4">
+              EdilRate può moderare, modificare o rimuovere contenuti che
+              risultino non conformi ai presenti termini, offensivi, falsi,
+              spam o contrari alla legge.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-2xl font-semibold text-black">
+              8. Modifiche al servizio
+            </h2>
+            <p className="mt-4">
+              EdilRate può modificare, sospendere o aggiornare funzionalità,
+              contenuti e condizioni di utilizzo della piattaforma nel tempo.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-2xl font-semibold text-black">
+              9. Nota importante
+            </h2>
+            <p className="mt-4">
+              Questi Termini di servizio sono una bozza iniziale e dovranno
+              essere revisionati prima del lancio pubblico definitivo della
+              piattaforma.
+            </p>
+          </section>
+        </div>
+      </section>
+      <Footer />
+    </main>
+  );
+}

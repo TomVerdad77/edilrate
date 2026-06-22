@@ -1,10 +1,39 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/src/lib/supabase";
 
 export default function ImportPage() {
   const [rows, setRows] = useState<any[]>([]);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    checkAdmin();
+  }, []);
+  
+  const checkAdmin = async () => {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+  
+    if (!user) {
+      setLoading(false);
+      return;
+    }
+  
+    const { data } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+  
+    if (data?.role === "admin") {
+      setIsAdmin(true);
+    }
+  
+    setLoading(false);
+  };
 
   const createSlug = (name: string) =>
     name.toLowerCase().trim().replaceAll(" ", "-").replace(/[^a-z0-9-]/g, "");
@@ -76,6 +105,21 @@ export default function ImportPage() {
     alert(`${companiesToInsert.length} aziende importate con successo!`);
     setRows([]);
   };
+
+  if (loading) {
+    return <main className="min-h-screen p-10">Caricamento...</main>;
+  }
+  
+  if (!isAdmin) {
+    return (
+      <main className="min-h-screen p-10">
+        <h1 className="text-3xl font-bold">Accesso negato</h1>
+        <p className="mt-4 text-gray-600">
+          Non hai i permessi per visualizzare questa pagina.
+        </p>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-white text-black">

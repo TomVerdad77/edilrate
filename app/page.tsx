@@ -1,6 +1,6 @@
 
 "use client";
-
+import Footer from "@/components/Footer";
 import { useEffect, useState } from "react";
 import { supabase } from "@/src/lib/supabase";
 
@@ -99,15 +99,19 @@ export default function Home() {
       {/* NAVBAR */}
       <header className="sticky top-0 z-50 bg-white/80 backdrop-blur border-b">
   <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-    <a href="/" className="text-2xl font-bold tracking-tight">
-      EdilRate
-    </a>
+  <a href="/" className="flex items-center">
+  <img
+  src="/logo-edilrate.png"
+  alt="EdilRate"
+  className="h-16 w-auto object-contain"
+/>
+</a>
 
     <nav className="hidden md:flex gap-8 text-sm text-gray-600">
       <a href="/" className="hover:text-black transition">Home</a>
       <a href="/imprese" className="hover:text-black transition">Imprese</a>
       <a href="/imprese" className="hover:text-black transition">Categorie</a>
-      <a href="#" className="hover:text-black transition">Chi siamo</a>
+      <a href="/chi-siamo" className="hover:text-black transition">Chi siamo</a>
     </nav>
 
     <div className="flex gap-3 items-center">
@@ -493,6 +497,7 @@ export default function Home() {
 </div>
         </div>
       </footer>
+      <Footer />
     </main>
   );
 }

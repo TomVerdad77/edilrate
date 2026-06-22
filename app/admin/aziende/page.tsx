@@ -6,7 +6,8 @@ import { supabase } from "@/src/lib/supabase";
 export default function AdminAziendePage() {
   const [companies, setCompanies] = useState<any[]>([]);
   const [search, setSearch] = useState("");
-
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [newName, setNewName] = useState("");
 const [newPhone, setNewPhone] = useState("");
 const [newCity, setNewCity] = useState("");
@@ -15,9 +16,9 @@ const [newSubcategory, setNewSubcategory] = useState("");
 
 const [editingCompanyId, setEditingCompanyId] = useState<string | null>(null);
 
-  useEffect(() => {
-    loadCompanies();
-  }, []);
+useEffect(() => {
+  checkAdmin();
+}, []);
 
   const createSlug = (name: string) => {
     return name
@@ -65,6 +66,30 @@ const [editingCompanyId, setEditingCompanyId] = useState<string | null>(null);
     setNewSubcategory("");
 
     loadCompanies();
+  };
+
+  const checkAdmin = async () => {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      setLoading(false);
+      return;
+    }
+
+    const { data } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+
+    if (data?.role === "admin") {
+      setIsAdmin(true);
+      await loadCompanies();
+    }
+
+    setLoading(false);
   };
 
   const createCompany = async () => {
@@ -120,6 +145,21 @@ const [editingCompanyId, setEditingCompanyId] = useState<string | null>(null);
     const text = `${company.name} ${company.city} ${company.category}`.toLowerCase();
     return text.includes(search.toLowerCase());
   });
+
+  if (loading) {
+    return <main className="min-h-screen p-10">Caricamento...</main>;
+  }
+  
+  if (!isAdmin) {
+    return (
+      <main className="min-h-screen p-10">
+        <h1 className="text-3xl font-bold">Accesso negato</h1>
+        <p className="mt-4 text-gray-600">
+          Non hai i permessi per visualizzare questa pagina.
+        </p>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-white text-black">

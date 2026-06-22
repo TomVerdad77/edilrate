@@ -1,3 +1,4 @@
+import Footer from "@/components/Footer";
 export default function ContattiPage() {
     return (
       <main className="min-h-screen bg-white text-black">
@@ -19,6 +20,7 @@ export default function ContattiPage() {
             </p>
           </div>
         </section>
+        <Footer />
       </main>
     );
   }

@@ -174,7 +174,31 @@ setImages(imageData || []);
     <main className="min-h-screen bg-white text-black">
       <section className="max-w-6xl mx-auto px-6 py-12">
         <h1 className="text-4xl font-bold">Dashboard azienda</h1>
+        <div className="mt-8 grid grid-cols-2 md:grid-cols-4 gap-4">
+  <div className="border rounded-3xl p-6">
+    <p className="text-sm text-gray-500">Richieste totali</p>
+    <p className="mt-2 text-3xl font-bold">{quotes.length}</p>
+  </div>
 
+  <div className="border rounded-3xl p-6">
+    <p className="text-sm text-gray-500">Da contattare</p>
+    <p className="mt-2 text-3xl font-bold">
+      {quotes.filter((quote) => quote.status === "pending").length}
+    </p>
+  </div>
+
+  <div className="border rounded-3xl p-6">
+    <p className="text-sm text-gray-500">Contattate</p>
+    <p className="mt-2 text-3xl font-bold">
+      {quotes.filter((quote) => quote.status === "contacted").length}
+    </p>
+  </div>
+
+  <div className="border rounded-3xl p-6">
+    <p className="text-sm text-gray-500">Foto caricate</p>
+    <p className="mt-2 text-3xl font-bold">{images.length}</p>
+  </div>
+</div>
         <div className="mt-8 border rounded-3xl p-6">
         <div className="mt-10 border rounded-3xl p-6">
   <h2 className="text-2xl font-semibold">

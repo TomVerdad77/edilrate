@@ -1,5 +1,6 @@
 "use client";
 
+import Footer from "@/components/Footer";
 import { useEffect, useState } from "react";
 import { supabase } from "@/src/lib/supabase";
 
@@ -184,6 +185,7 @@ const availableCategories = Array.from(
         </div>
         </div>
       </section>
+      <Footer />
     </main>
   );
 }

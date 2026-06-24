@@ -1,3 +1,4 @@
+import Footer from "@/components/Footer";
 export default function ChiSiamoPage() {
     return (
       <main className="min-h-screen bg-white text-black">
@@ -35,6 +36,7 @@ export default function ChiSiamoPage() {
             </p>
           </div>
         </section>
+        <Footer />
       </main>
     );
   }

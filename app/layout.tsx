@@ -17,11 +17,18 @@ export const metadata: Metadata = {
   title: "EdilRate - Recensioni e preventivi per imprese edili",
   description:
     "Trova imprese edili in Friuli Venezia Giulia, leggi recensioni reali e richiedi preventivi direttamente alle aziende.",
-
+   
     icons: {
-      icon: "/favicon.png",
+      icon: [
+        {
+          url: "/favicon.ico?v=2",
+          type: "image/x-icon",
+        },
+      ],
+      shortcut: "/favicon.ico?v=2",
+      apple: "/favicon.ico?v=2",
     },
-  
+
   openGraph: {
     title: "EdilRate",
     description:

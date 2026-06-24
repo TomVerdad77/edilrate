@@ -1,5 +1,6 @@
 "use client";
 
+import Footer from "@/components/Footer";
 import { useEffect, useState } from "react";
 import { supabase } from "@/src/lib/supabase";
 
@@ -421,6 +422,7 @@ setImages(imageData || []);
           </div>
         </div>
       </section>
+      <Footer />
     </main>
   );
 }

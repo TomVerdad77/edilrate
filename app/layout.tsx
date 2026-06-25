@@ -19,9 +19,19 @@ export const metadata: Metadata = {
     "Trova imprese edili in Friuli Venezia Giulia, leggi recensioni reali e richiedi preventivi direttamente alle aziende.",
    
     icons: {
-      icon: "/favicon.ico?v=3",
-      shortcut: "/favicon.ico?v=3",
-      apple: "/favicon.ico?v=3",
+      icon: [
+        {
+          url: "/favicon.ico?v=4",
+          type: "image/x-icon",
+          sizes: "any",
+        },
+      ],
+      shortcut: [
+        {
+          url: "/favicon.ico?v=4",
+          type: "image/x-icon",
+        },
+      ],
     },
 
   openGraph: {

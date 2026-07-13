@@ -12,14 +12,18 @@ export default function LoginPage() {
   const loginWithGoogle = async () => {
     await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: "http://localhost:3000" },
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+      },
     });
   };
-
+  
   const loginWithFacebook = async () => {
     await supabase.auth.signInWithOAuth({
       provider: "facebook",
-      options: { redirectTo: "http://localhost:3000" },
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+      },
     });
   };
 
@@ -110,4 +114,4 @@ export default function LoginPage() {
       <Footer />
     </main>
   );
-}
+  }

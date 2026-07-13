@@ -29,7 +29,7 @@ export default function RegisterPage() {
         data: {
           full_name: fullName,
         },
-        emailRedirectTo: "http://localhost:3000",
+        emailRedirectTo: `${window.location.origin}/auth/callback`,
       },
     });
 

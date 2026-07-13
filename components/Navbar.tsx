@@ -3,19 +3,49 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/src/lib/supabase";
 
+
 export default function Navbar() {
   const [user, setUser] = useState<any>(null);
+  const [hasCompany, setHasCompany] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [authContextLoading, setAuthContextLoading] = useState(true);
 
   useEffect(() => {
-    const getUser = async () => {
+    const loadUserContext = async () => {
       const {
-        data: { user },
+        data: { user: currentUser },
       } = await supabase.auth.getUser();
-
-      setUser(user);
+  
+      setUser(currentUser);
+  
+      if (!currentUser) {
+        setHasCompany(false);
+        setIsAdmin(false);
+        setAuthContextLoading(false);
+        return;
+      }
+  
+      const [profileResult, companyResult] = await Promise.all([
+        supabase
+          .from("profiles")
+          .select("role")
+          .eq("id", currentUser.id)
+          .maybeSingle(),
+  
+        supabase
+          .from("companies")
+          .select("id")
+          .eq("claimed_by", currentUser.id)
+          .limit(1)
+          .maybeSingle(),
+      ]);
+  
+      setIsAdmin(profileResult.data?.role === "admin");
+      setHasCompany(Boolean(companyResult.data));
+      setAuthContextLoading(false);
     };
-
-    getUser();
+  
+    loadUserContext();
   }, []);
 
   const loginWithGoogle = async () => {
@@ -29,7 +59,7 @@ export default function Navbar() {
 
   const loginWithFacebook = async () => {
     await supabase.auth.signInWithOAuth({
-      provider: "google",
+      provider: "facebook",
       options: {
         redirectTo: window.location.origin,
       },
@@ -38,7 +68,7 @@ export default function Navbar() {
 
   const logout = async () => {
     await supabase.auth.signOut();
-    window.location.reload();
+    window.location.href = "/";
   };
 
   return (
@@ -66,12 +96,23 @@ export default function Navbar() {
                 Ciao, {user.user_metadata?.full_name || user.email}
               </span>
 
-              <a
-                href="/dashboard"
-                className="px-4 py-2 text-sm bg-black text-white rounded-xl"
-              >
-                Dashboard
-              </a>
+              {!authContextLoading && isAdmin && (
+  <a
+    href="/admin"
+    className="px-4 py-2 text-sm bg-black text-white rounded-xl transition hover:bg-gray-800"
+  >
+    Admin
+  </a>
+)}
+
+{!authContextLoading && !isAdmin && hasCompany && (
+  <a
+    href="/dashboard"
+    className="px-4 py-2 text-sm bg-black text-white rounded-xl transition hover:bg-gray-800"
+  >
+    Dashboard azienda
+  </a>
+)}
 
               <button
                 onClick={logout}

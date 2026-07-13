@@ -173,7 +173,10 @@ const [toastType, setToastType] = useState<"success" | "error">("success");
 
     setUser(user);
 
-    if (!user) return;
+if (!user) {
+  window.location.replace("/auth/login");
+  return;
+}
 
     const { data: companyData } = await supabase
       .from("companies")
@@ -181,10 +184,12 @@ const [toastType, setToastType] = useState<"success" | "error">("success");
       .eq("claimed_by", user.id)
       .single();
 
-    setCompany(companyData);
-    if (!companyData) {
-      return;
-    }
+      if (!companyData) {
+        window.location.replace("/");
+        return;
+      }
+      
+      setCompany(companyData);
     
     setDescription(companyData.description || "");
     setPhone(companyData.phone || "");

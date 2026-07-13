@@ -1,7 +1,9 @@
+import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 export default function ChiSiamoPage() {
     return (
       <main className="min-h-screen bg-white text-black">
+        <Navbar />
         <section className="max-w-5xl mx-auto px-6 py-20">
           <h1 className="text-5xl font-bold">
             Chi siamo

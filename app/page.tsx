@@ -1,29 +1,10 @@
 
 "use client";
+import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { useEffect, useState } from "react";
 import { supabase } from "@/src/lib/supabase";
 
-const featuredCompanies = [
-  {
-    name: "Edil Trieste SRL",
-    category: "Ristrutturazioni",
-    city: "Trieste",
-    rating: 4.8,
-  },
-  {
-    name: "Rossi Costruzioni",
-    category: "Muratori",
-    city: "Muggia",
-    rating: 4.6,
-  },
-  {
-    name: "Adriatica Impianti",
-    category: "Elettricisti",
-    city: "Monfalcone",
-    rating: 4.9,
-  },
-];
 
 const categories = [
   "Ristrutturazioni",
@@ -34,52 +15,156 @@ const categories = [
   "Imbianchini",
 ];
 
+type RatingDistributionItem = {
+  star: number;
+  count: number;
+  percentage: number;
+};
+
+function getRatingDistribution(ratings: number[]): RatingDistributionItem[] {
+  const counts: Record<number, number> = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+
+  for (const rating of ratings) {
+    if (rating >= 1 && rating <= 5) {
+      counts[rating]++;
+    }
+  }
+
+  const total = ratings.length;
+
+  return [5, 4, 3, 2, 1].map((star) => ({
+    star,
+    count: counts[star],
+    percentage: total > 0 ? (counts[star] / total) * 100 : 0,
+  }));
+}
+
 export default function Home() { 
-  const [user, setUser] = useState<any>(null);
   const [search, setSearch] = useState("");
   const [featuredCompanies, setFeaturedCompanies] = useState<any[]>([]);
-  useEffect(() => {
-    const getUser = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+  const [companiesCount, setCompaniesCount] = useState(0);
+const [reviewsCount, setReviewsCount] = useState(0);
+const [quotesCount, setQuotesCount] = useState(0);
+const [claimedCount, setClaimedCount] = useState(0);
 
-      setUser(user);
-    };
+const [stats, setStats] = useState({
+  companies: 0,
+  reviews: 0,
+  cities: 0,
+});
+useEffect(() => {
+  loadFeaturedCompanies();
+  loadStats();
+}, []);
+  
+  const loadStats = async () => {
+    const { count: companies } = await supabase
+      .from("companies")
+      .select("*", { count: "exact", head: true });
 
-    getUser();
-    loadFeaturedCompanies();
-  }, []);   
+    const { count: reviews } = await supabase
+      .from("reviews")
+      .select("*", { count: "exact", head: true });
+
+    const { count: quotes } = await supabase
+      .from("quote_requests")
+      .select("*", { count: "exact", head: true });
+
+    const { count: claimed } = await supabase
+      .from("companies")
+      .select("*", { count: "exact", head: true })
+      .eq("claimed", true);
+
+    setCompaniesCount(companies || 0);
+    setReviewsCount(reviews || 0);
+    setQuotesCount(quotes || 0);
+    setClaimedCount(claimed || 0);
+  };
+  
   const loadFeaturedCompanies = async () => {
     const { data, error } = await supabase
-      .from("companies")
-      .select("id, name, slug, city, province, category, description, average_rating, review_count, verified")
-      .order("created_at", { ascending: false })
-      .limit(3);
+  .from("companies")
+  .select(`
+  id,
+  name,
+  slug,
+  city,
+  province,
+  category,
+  description,
+  average_rating,
+  review_count,
+  verified,
+  claimed,
+  company_images (
+  image_url,
+  is_cover,
+  created_at
+)
+`)
+  .order("claimed", { ascending: false })
+  .order("average_rating", { ascending: false })
+  .order("review_count", { ascending: false })
+  .limit(3);
   
     if (error) {
       console.log(error.message);
       return;
     }
-  
-    setFeaturedCompanies(data || []);
-  };
-  const loginWithGoogle = async () => {
-    await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: "http://localhost:3000",
-      },
-    });
-  };
 
-  const loginWithFacebook = async () => {
-    await supabase.auth.signInWithOAuth({
-      provider: "facebook",
-      options: {
-        redirectTo: "http://localhost:3000",
-      },
-    });
+    const { count: companiesCount } = await supabase
+    .from("companies")
+    .select("*", { count: "exact", head: true });
+  
+  const { count: reviewsCount } = await supabase
+    .from("reviews")
+    .select("*", { count: "exact", head: true });
+  
+  const { data: citiesData } = await supabase
+    .from("companies")
+    .select("city");
+  
+  const uniqueCities = new Set(
+    (citiesData || [])
+      .map((c) => c.city)
+      .filter(Boolean)
+  );
+  
+  setStats({
+    companies: companiesCount || 0,
+    reviews: reviewsCount || 0,
+    cities: uniqueCities.size,
+  });
+
+    const companies = data || [];
+
+    if (companies.length === 0) {
+      setFeaturedCompanies([]);
+      return;
+    }
+
+    const companyIds = companies.map((company) => company.id);
+    const { data: reviews } = await supabase
+      .from("reviews")
+      .select("company_id, rating")
+      .in("company_id", companyIds);
+
+    const ratingsByCompany = new Map<string, number[]>();
+
+    for (const review of reviews || []) {
+      const existing = ratingsByCompany.get(review.company_id) || [];
+      existing.push(review.rating);
+      ratingsByCompany.set(review.company_id, existing);
+    }
+
+    setFeaturedCompanies(
+      companies.map((company) => ({
+        ...company,
+        ratingDistribution: getRatingDistribution(
+          ratingsByCompany.get(company.id) || []
+        ),
+      }))
+    );
   };
 
   const handleSearch = () => {
@@ -90,75 +175,10 @@ export default function Home() {
 
     window.location.href = `/imprese?search=${encodeURIComponent(search.trim())}`;
   };
-  const logout = async () => {
-    await supabase.auth.signOut();
-    window.location.reload();
-  };
+
   return (
     <main className="min-h-screen bg-white text-black">
-      {/* NAVBAR */}
-      <header className="sticky top-0 z-50 bg-white/80 backdrop-blur border-b">
-  <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-  <a href="/" className="flex items-center">
-  <img
-  src="/logo-edilrate.png"
-  alt="EdilRate"
-  className="h-16 w-auto object-contain"
-/>
-</a>
-
-    <nav className="hidden md:flex gap-8 text-sm text-gray-600">
-      <a href="/" className="hover:text-black transition">Home</a>
-      <a href="/imprese" className="hover:text-black transition">Imprese</a>
-      <a href="/imprese" className="hover:text-black transition">Categorie</a>
-      <a href="/chi-siamo" className="hover:text-black transition">Chi siamo</a>
-    </nav>
-
-    <div className="flex gap-3 items-center">
-      {user ? (
-        <>
-          <span className="hidden md:block text-sm text-gray-600">
-            Ciao, {user.user_metadata?.full_name}
-          </span>
-
-          <a
-            href="/dashboard"
-            className="px-4 py-2 text-sm bg-black text-white rounded-xl"
-          >
-            Dashboard
-          </a>
-
-          <button
-            onClick={logout}
-            className="px-4 py-2 text-sm border rounded-xl hover:bg-gray-100 transition"
-          >
-            Esci
-          </button>
-        </>
-      ) : (
-        <>
-         <button
-  onClick={loginWithGoogle}
-  className="px-4 py-2 text-sm border rounded-xl hover:bg-gray-100 transition"
->
-  Google
-</button>
-
-<button
-  onClick={loginWithFacebook}
-  className="px-4 py-2 text-sm border rounded-xl hover:bg-gray-100 transition"
->
-  Facebook
-</button>
-
-          <button className="hidden md:block px-4 py-2 text-sm bg-black text-white rounded-xl hover:bg-gray-800 transition">
-            Registra impresa
-          </button>
-        </>
-      )}
-    </div>
-  </div>
-</header>
+    <Navbar />
 
       {/* HERO */}
 <section className="relative overflow-hidden">
@@ -198,6 +218,45 @@ export default function Home() {
         </button>
       </div>
     </div>
+    <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
+
+<div className="bg-white border rounded-3xl p-8 shadow-sm text-center">
+  <div className="text-4xl">🏢</div>
+
+  <p className="mt-4 text-4xl font-bold">
+    {stats.companies}
+  </p>
+
+  <p className="mt-2 text-gray-500">
+    Imprese registrate
+  </p>
+</div>
+
+<div className="bg-white border rounded-3xl p-8 shadow-sm text-center">
+  <div className="text-4xl">⭐</div>
+
+  <p className="mt-4 text-4xl font-bold">
+    {stats.reviews}
+  </p>
+
+  <p className="mt-2 text-gray-500">
+    Recensioni pubblicate
+  </p>
+</div>
+
+<div className="bg-white border rounded-3xl p-8 shadow-sm text-center">
+  <div className="text-4xl">📍</div>
+
+  <p className="mt-4 text-4xl font-bold">
+    {stats.cities}
+  </p>
+
+  <p className="mt-2 text-gray-500">
+    Città coperte
+  </p>
+</div>
+
+</div>
 
     <div className="mt-12 flex flex-col md:flex-row items-center justify-center gap-8 text-sm text-gray-500">
       <div>✅ Aziende verificate</div>
@@ -211,43 +270,23 @@ export default function Home() {
 <section className="max-w-7xl mx-auto px-6 pb-24">
   <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
     <div className="border rounded-3xl p-8 text-center bg-white shadow-sm">
-      <div className="text-4xl font-bold">
-        200+
-      </div>
-
-      <p className="mt-3 text-gray-600">
-        Aziende presenti
-      </p>
+      <div className="text-4xl font-bold">{companiesCount}</div>
+      <p className="mt-3 text-gray-600">Aziende presenti</p>
     </div>
 
     <div className="border rounded-3xl p-8 text-center bg-white shadow-sm">
-      <div className="text-4xl font-bold">
-        4
-      </div>
-
-      <p className="mt-3 text-gray-600">
-        Province coperte
-      </p>
+      <div className="text-4xl font-bold">{reviewsCount}</div>
+      <p className="mt-3 text-gray-600">Recensioni</p>
     </div>
 
     <div className="border rounded-3xl p-8 text-center bg-white shadow-sm">
-      <div className="text-4xl font-bold">
-        FVG
-      </div>
-
-      <p className="mt-3 text-gray-600">
-        Focus regionale
-      </p>
+      <div className="text-4xl font-bold">{quotesCount}</div>
+      <p className="mt-3 text-gray-600">Preventivi inviati</p>
     </div>
 
     <div className="border rounded-3xl p-8 text-center bg-white shadow-sm">
-      <div className="text-4xl font-bold">
-        100%
-      </div>
-
-      <p className="mt-3 text-gray-600">
-        Gratuito per iniziare
-      </p>
+      <div className="text-4xl font-bold">{claimedCount}</div>
+      <p className="mt-3 text-gray-600">Profili rivendicati</p>
     </div>
   </div>
 </section>
@@ -312,73 +351,19 @@ export default function Home() {
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-          {categories.map((category) => (
-            <div
-              key={category}
-              className="border rounded-2xl p-6 hover:shadow-md transition cursor-pointer"
-            >
-              <h3 className="font-medium text-center">
-                {category}
-              </h3>
-            </div>
-          ))}
+        {categories.map((category) => (
+  <a
+    key={category}
+    href={`/imprese?search=${encodeURIComponent(category)}`}
+    className="border rounded-2xl p-6 hover:shadow-lg hover:-translate-y-1 hover:bg-gray-50 transition-all duration-300 cursor-pointer block"
+  >
+    <h3 className="font-medium text-center">
+      {category}
+    </h3>
+  </a>
+))}
         </div>
       </section>
-
-{/* HOW IT WORKS */}
-<section className="max-w-7xl mx-auto px-6 pb-28">
-  <div className="text-center max-w-3xl mx-auto">
-    <h2 className="text-4xl font-bold">
-      Come funziona EdilRate
-    </h2>
-
-    <p className="mt-4 text-gray-600 text-lg">
-      Ti aiutiamo a trovare imprese affidabili e a richiedere preventivi
-      in modo semplice, veloce e trasparente.
-    </p>
-  </div>
-
-  <div className="mt-14 grid md:grid-cols-3 gap-8">
-    <div className="border rounded-3xl p-8 bg-white shadow-sm">
-      <div className="text-4xl">🔍</div>
-
-      <h3 className="mt-6 text-2xl font-semibold">
-        Cerca l’impresa
-      </h3>
-
-      <p className="mt-4 text-gray-600 leading-7">
-        Filtra per città, categoria o tipo di lavoro e trova le imprese
-        più adatte al tuo progetto.
-      </p>
-    </div>
-
-    <div className="border rounded-3xl p-8 bg-white shadow-sm">
-      <div className="text-4xl">⭐</div>
-
-      <h3 className="mt-6 text-2xl font-semibold">
-        Leggi le recensioni
-      </h3>
-
-      <p className="mt-4 text-gray-600 leading-7">
-        Consulta esperienze reali di altri utenti prima di scegliere a chi
-        affidare il tuo lavoro.
-      </p>
-    </div>
-
-    <div className="border rounded-3xl p-8 bg-white shadow-sm">
-      <div className="text-4xl">📩</div>
-
-      <h3 className="mt-6 text-2xl font-semibold">
-        Richiedi un preventivo
-      </h3>
-
-      <p className="mt-4 text-gray-600 leading-7">
-        Invia una richiesta direttamente all’impresa e ricevi un contatto
-        per valutare il lavoro.
-      </p>
-    </div>
-  </div>
-</section>
 
       {/* FEATURED COMPANIES */}
 <section className="max-w-7xl mx-auto px-6 pb-28">
@@ -404,64 +389,132 @@ export default function Home() {
   <div className="grid md:grid-cols-3 gap-6 md:gap-8">
     {featuredCompanies.map((company) => (
       <div
-        key={company.id}
-        className="group border rounded-3xl md:rounded-[28px] overflow-hidden hover:shadow-2xl transition duration-300 bg-white flex flex-col"
-      >
-        <div className="h-48 md:h-56 bg-gradient-to-br from-gray-100 to-gray-300 flex items-center justify-center text-gray-500">
-          EdilRate
-        </div>
-
-        <div className="p-5 md:p-7 flex flex-col flex-1">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <h3 className="text-xl md:text-2xl font-semibold leading-tight">
-                {company.name}
-              </h3>
-
-              <p className="mt-2 text-gray-600">
-                {company.category || "Categoria non indicata"}
-              </p>
-
-              <p className="mt-1 text-sm text-gray-500">
-                📍 {company.city || "Città non indicata"} · {company.province || "FVG"}
-              </p>
-            </div>
-
-            {company.verified && (
-              <div className="border rounded-full px-3 py-1 text-xs">
-                Verificata
-              </div>
-            )}
-          </div>
-
-          {company.description && (
-            <p className="mt-4 text-sm text-gray-500 line-clamp-2">
-              {company.description}
-            </p>
-          )}
-
-          <p className="mt-5 text-sm text-gray-500">
-            ⭐ {company.average_rating ?? 0} · {company.review_count ?? 0} recensioni
-          </p>
-
-          <div className="mt-auto pt-6 flex flex-col sm:flex-row gap-3">
-            <a
-              href={`/imprese/${company.slug}`}
-              className="flex-1 border py-3 rounded-2xl hover:bg-gray-100 transition text-center"
-            >
-              Profilo
-            </a>
-
-            <a
-              href={`/imprese/${company.slug}#preventivo`}
-              className="flex-1 bg-black text-white py-3 rounded-2xl hover:bg-gray-800 transition text-center"
-            >
-              Preventivo
-            </a>
-          </div>
-        </div>
+  key={company.id}
+  className="group border rounded-[32px] overflow-hidden hover:shadow-2xl transition duration-300 bg-white flex flex-col"
+>
+<div className="h-48 bg-gradient-to-br from-gray-50 to-gray-200 overflow-hidden">
+  {company.company_images?.find((image: any) => image.is_cover)?.image_url ||
+company.company_images?.[0]?.image_url ? (
+    <img
+      src={
+  company.company_images?.find((image: any) => image.is_cover)?.image_url ||
+  company.company_images?.[0]?.image_url
+}
+      alt={company.name}
+      className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
+    />
+  ) : (
+    <div className="h-full flex items-center justify-center">
+      <div className="text-center">
+        <div className="text-5xl">🏗️</div>
+        <p className="mt-3 text-sm text-gray-500">EdilRate</p>
       </div>
+    </div>
+  )}
+</div>
+
+  <div className="p-7 flex flex-col flex-1">
+    <div className="flex items-start justify-between gap-4">
+      <div>
+        <h3 className="text-2xl font-semibold leading-tight">
+          {company.name}
+        </h3>
+
+        <div className="mt-3">
+  <span className="inline-flex bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-xs font-medium">
+    {company.category || "Categoria non indicata"}
+  </span>
+</div>
+
+        <p className="mt-1 text-sm text-gray-500">
+          📍 {company.city || "Città non indicata"} · {company.province || "FVG"}
+        </p>
+      </div>
+
+      {company.verified && (
+        <span className="bg-green-100 text-green-700 rounded-full px-3 py-1 text-xs font-medium">
+          🛡️ Verificata
+        </span>
+      )}
+    </div>
+
+    <div className="mt-5 flex items-center gap-3">
+  <div className="flex items-center text-yellow-400 text-lg">
+    {"★".repeat(Math.round(company.average_rating || 0))}
+    <span className="text-gray-300">
+      {"★".repeat(5 - Math.round(company.average_rating || 0))}
+    </span>
+  </div>
+
+  <div className="text-sm text-gray-600">
+    <span className="font-semibold text-black">
+      {company.average_rating?.toFixed?.(1) ?? "0.0"}
+    </span>{" "}
+    ({company.review_count ?? 0})
+  </div>
+</div>
+
+    {company.claimed && (
+      <div className="mt-4">
+        <span className="bg-blue-100 text-blue-700 rounded-full px-3 py-1 text-xs font-medium">
+          Profilo rivendicato
+        </span>
+      </div>
+    )}
+
+    {company.description && (
+      <p className="mt-5 text-sm text-gray-500 line-clamp-2">
+        {company.description}
+      </p>
+    )}
+
+    <div className="mt-auto pt-7 flex gap-3">
+      <a
+        href={`/imprese/${company.slug}`}
+        className="flex-1 border py-3 rounded-2xl hover:bg-gray-100 transition text-center"
+      >
+        Vedi profilo
+      </a>
+
+      <a
+        href={`/imprese/${company.slug}#preventivo`}
+        className="flex-1 bg-black text-white py-3 rounded-2xl hover:bg-gray-800 transition text-center"
+      >
+        Preventivo
+      </a>
+    </div>
+  </div>
+</div>
     ))}
+  </div>
+</section>
+{/* FINAL CTA */}
+<section className="max-w-7xl mx-auto px-6 pb-28">
+  <div className="bg-black text-white rounded-[32px] p-10 md:p-16 text-center">
+    <h2 className="text-3xl md:text-5xl font-bold">
+      Trova l’impresa giusta per il tuo prossimo progetto.
+    </h2>
+
+    <p className="mt-5 text-gray-300 max-w-2xl mx-auto">
+      Esplora le aziende presenti su EdilRate oppure registra la tua impresa
+      per iniziare a ricevere richieste.
+    </p>
+
+    <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
+      <a
+        href="/imprese"
+        className="bg-white text-black px-6 py-4 rounded-2xl font-medium"
+      >
+        Cerca un’impresa
+      </a>
+
+      <a
+        href="/dashboard"
+        className="border border-white/30 px-6 py-4 rounded-2xl font-medium hover:bg-white/10 transition"
+      >
+        Registra la tua azienda
+      </a>
+    </div>
   </div>
 </section>
       <Footer />

@@ -1,7 +1,9 @@
 import Footer from "@/components/Footer";
+import Navbar from "@/components/Navbar";
 export default function CookiePage() {
     return (
       <main className="min-h-screen bg-white text-black">
+        <Navbar />
         <section className="max-w-5xl mx-auto px-6 py-20">
           <h1 className="text-5xl font-bold">Cookie Policy</h1>
   

@@ -14,24 +14,20 @@ const geistMono = Geist_Mono({
 
 
 export const metadata: Metadata = {
-  title: "EdilRate - Recensioni e preventivi per imprese edili",
-  description:
-    "Trova imprese edili in Friuli Venezia Giulia, leggi recensioni reali e richiedi preventivi direttamente alle aziende.",
-   
-    icons: {
-      icon: "/edilrate-favicon.ico?v=1",
-      shortcut: "/edilrate-favicon.ico?v=1",
-      apple: "/edilrate-favicon.ico?v=1",
-    },
+  metadataBase: new URL("https://edilrate.vercel.app"),
 
-  openGraph: {
-    title: "EdilRate",
-    description:
-      "La piattaforma di recensioni per imprese edili del Friuli Venezia Giulia.",
-    url: "https://edilrate.vercel.app",
-    siteName: "EdilRate",
-    locale: "it_IT",
-    type: "website",
+  title: {
+    default: "EdilRate",
+    template: "%s | EdilRate",
+  },
+
+  description:
+    "Trova imprese edili, leggi recensioni verificate e richiedi preventivi in Friuli Venezia Giulia.",
+
+  icons: {
+    icon: "/edilrate-favicon.ico",
+    shortcut: "/edilrate-favicon.ico",
+    apple: "/edilrate-favicon.ico",
   },
 };
 

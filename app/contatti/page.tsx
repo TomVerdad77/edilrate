@@ -1,7 +1,10 @@
 import Footer from "@/components/Footer";
+import Navbar from "@/components/Navbar";
+
 export default function ContattiPage() {
     return (
       <main className="min-h-screen bg-white text-black">
+        <Navbar />
         <section className="max-w-4xl mx-auto px-6 py-16">
           <h1 className="text-4xl font-bold">Contatti</h1>
   

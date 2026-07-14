@@ -1,3 +1,11 @@
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Contatti",
+  description:
+    "Contatta il team di EdilRate per informazioni, collaborazioni o assistenza.",
+};
+
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 

@@ -85,7 +85,7 @@ export default function Navbar() {
         <nav className="hidden md:flex gap-8 text-sm text-gray-600">
           <a href="/" className="hover:text-black transition">Home</a>
           <a href="/imprese" className="hover:text-black transition">Imprese</a>
-          <a href="/imprese" className="hover:text-black transition">Categorie</a>
+          <a href="/categorie" className="hover:text-black transition">Categorie </a>
           <a href="/chi-siamo" className="hover:text-black transition">Chi siamo</a>
         </nav>
 

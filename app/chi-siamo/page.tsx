@@ -1,3 +1,11 @@
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Chi siamo",
+  description:
+    "Scopri la missione di EdilRate e il nostro obiettivo: rendere più semplice scegliere un'impresa edile affidabile.",
+};
+
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 export default function ChiSiamoPage() {

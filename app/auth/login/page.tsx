@@ -4,10 +4,26 @@ import { useState } from "react";
 import { supabase } from "@/src/lib/supabase";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import Toast from "@/components/ui/Toast";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
+  const [toastType, setToastType] = useState<"success" | "error">("success");
+
+  const showToast = (
+    message: string,
+    type: "success" | "error" = "success"
+  ) => {
+    setToastType(type);
+    setToastMessage(message);
+  
+    window.setTimeout(() => {
+      setToastMessage("");
+    }, 3000);
+  };
 
   const loginWithGoogle = async () => {
     await supabase.auth.signInWithOAuth({
@@ -28,21 +44,40 @@ export default function LoginPage() {
   };
 
   const loginWithEmail = async () => {
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    if (error) {
-      alert(error.message);
+    if (!email.trim() || !password) {
+      showToast("Inserisci email e password.", "error");
       return;
     }
-
-    window.location.href = "/dashboard";
+  
+    setLoading(true);
+  
+    const { error } = await supabase.auth.signInWithPassword({
+      email: email.trim(),
+      password,
+    });
+  
+    if (error) {
+      showToast(
+        error.message === "Invalid login credentials"
+          ? "Email o password non corretti."
+          : error.message,
+        "error"
+      );
+  
+      setLoading(false);
+      return;
+    }
+  
+    window.location.href = "/";
   };
 
   return (
     <main className="min-h-screen bg-white text-black">
+      <Toast
+  message={toastMessage}
+  type={toastType}
+  onClose={() => setToastMessage("")}
+/>
       <Navbar />
 
       <section className="max-w-md mx-auto px-6 py-20">
@@ -87,12 +122,14 @@ export default function LoginPage() {
             className="w-full border rounded-xl px-4 py-3"
           />
 
-          <button
-            onClick={loginWithEmail}
-            className="w-full bg-black text-white rounded-xl px-4 py-3 hover:bg-gray-800 transition"
-          >
-            Accedi
-          </button>
+            <button
+              type="button"
+              onClick={loginWithEmail}
+              disabled={loading}
+              className="w-full rounded-xl bg-black px-4 py-3 text-white transition hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+             {loading ? "Accesso in corso..." : "Accedi"}
+            </button>
 
           <div className="text-center text-sm text-gray-600 space-y-2">
             <p>

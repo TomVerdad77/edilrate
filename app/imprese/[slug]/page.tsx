@@ -282,12 +282,29 @@ setImages(imageData || []);
       <div className="mt-5 flex flex-wrap items-center gap-4">
       <div className="flex items-center gap-3">
 
-<div className="text-3xl text-yellow-400">
-  ★★★★★
+      <div className="text-3xl font-bold">
+  {averageRating}
 </div>
 
-<div className="text-3xl font-bold">
-  {averageRating}
+<div className="flex items-center text-2xl">
+  <span className="text-yellow-400">
+    {"★".repeat(
+      Math.max(
+        0,
+        Math.min(5, Math.round(Number(averageRating)))
+      )
+    )}
+  </span>
+
+  <span className="text-gray-200">
+    {"★".repeat(
+      5 -
+        Math.max(
+          0,
+          Math.min(5, Math.round(Number(averageRating)))
+        )
+    )}
+  </span>
 </div>
 
 </div>
@@ -295,12 +312,6 @@ setImages(imageData || []);
   <div className="text-gray-500">
     ({reviews.length} recensioni)
   </div>
-
-  {company.claimed && (
-    <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-medium">
-      Profilo rivendicato
-    </span>
-  )}
 </div>
 
 <div className="mt-6 max-w-md space-y-3">
@@ -341,6 +352,7 @@ setImages(imageData || []);
     Rivendica questa azienda
   </Button>
 )}
+
 {company.claimed && (
   <div className="inline-flex items-center rounded-2xl bg-green-50 px-5 py-4 text-sm font-medium text-green-700">
     ✓ Profilo già rivendicato
@@ -541,21 +553,59 @@ setImages(imageData || []);
     )}
   </div>
 
-        <div className="mt-12">
-          <h2 className="text-2xl font-semibold">
-            Descrizione
-          </h2>
+  <div className="mt-12 rounded-[32px] border bg-white p-6 shadow-sm md:p-8">
+  <div className="flex items-start gap-4">
+    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gray-100 text-xl">
+      🏢
+    </div>
 
-          <p className="mt-4 text-gray-700">
-            {company.description}
-          </p>
-        </div>
-<div id="preventivo" className="mt-12">
-  <h2 className="text-2xl font-semibold">
-    Richiedi un preventivo
-  </h2>
+    <div>
+      <p className="text-sm font-medium text-gray-500">
+        Presentazione aziendale
+      </p>
 
-  <div className="mt-6 border rounded-3xl p-6 space-y-4">
+      <h2 className="mt-1 text-2xl font-semibold tracking-tight">
+        Chi siamo
+      </h2>
+    </div>
+  </div>
+
+  {company.description ? (
+    <p className="mt-6 whitespace-pre-wrap leading-8 text-gray-700">
+      {company.description}
+    </p>
+  ) : (
+    <div className="mt-6 rounded-2xl bg-gray-50 p-5 text-sm leading-6 text-gray-500">
+      L’azienda non ha ancora inserito una descrizione.
+    </div>
+  )}
+</div>
+<div
+  id="preventivo"
+  className="mt-12 scroll-mt-24 rounded-[32px] border bg-white p-6 shadow-sm md:p-8"
+>
+  <div className="flex items-start gap-4">
+    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gray-100 text-xl">
+      📨
+    </div>
+
+    <div>
+      <p className="text-sm font-medium text-gray-500">
+        Contatta l’impresa
+      </p>
+
+      <h2 className="mt-1 text-2xl font-semibold tracking-tight">
+        Richiedi un preventivo gratuito
+      </h2>
+
+      <p className="mt-2 max-w-2xl text-sm leading-6 text-gray-600">
+        Descrivi il lavoro che vuoi realizzare. L’azienda riceverà la tua
+        richiesta e potrà ricontattarti utilizzando i dati inseriti.
+      </p>
+    </div>
+  </div>
+
+  <div className="mt-7 space-y-4">
     {quoteSent ? (
       <div className="rounded-2xl bg-green-50 p-5 text-green-800">
       <p className="font-medium">
@@ -572,7 +622,7 @@ setImages(imageData || []);
           value={quoteName}
           onChange={(e) => setQuoteName(e.target.value)}
           placeholder="Nome e cognome"
-          className="w-full border rounded-xl px-4 py-3"
+          className="w-full rounded-2xl border px-4 py-3 outline-none transition focus:border-black focus:ring-2 focus:ring-black/5"
         />
 
         <input
@@ -580,25 +630,27 @@ setImages(imageData || []);
           onChange={(e) => setQuoteEmail(e.target.value)}
           placeholder="Email"
           type="email"
-          className="w-full border rounded-xl px-4 py-3"
+          className="w-full rounded-2xl border px-4 py-3 outline-none transition focus:border-black focus:ring-2 focus:ring-black/5"
         />
 
         <input
           value={quotePhone}
           onChange={(e) => setQuotePhone(e.target.value)}
           placeholder="Telefono"
-          className="w-full border rounded-xl px-4 py-3"
+          type="tel"
+          className="w-full rounded-2xl border px-4 py-3 outline-none transition focus:border-black focus:ring-2 focus:ring-black/5"
         />
 
         <textarea
           value={quoteMessage}
           onChange={(e) => setQuoteMessage(e.target.value)}
           placeholder="Descrivi il lavoro che vuoi realizzare..."
-          className="w-full border rounded-xl px-4 py-3 h-32"
+          className="h-36 w-full resize-y rounded-2xl border px-4 py-3 outline-none transition focus:border-black focus:ring-2 focus:ring-black/5"
         />
 
 <Button
   onClick={submitQuoteRequest}
+  className="w-full sm:w-auto"
 >
   Invia richiesta
 </Button>
@@ -609,20 +661,37 @@ setImages(imageData || []);
 
 
         {/* REVIEW FORM */}
-        <div className="mt-12">
-          <h2 className="text-2xl font-semibold">
-            Lascia una recensione
-          </h2>
+<div className="mt-12 rounded-[32px] border bg-white p-6 shadow-sm md:p-8">
+  <div className="flex items-start gap-4">
+    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-yellow-50 text-xl">
+      ⭐
+    </div>
+
+    <div>
+      <p className="text-sm font-medium text-gray-500">
+        La tua esperienza conta
+      </p>
+
+      <h2 className="mt-1 text-2xl font-semibold tracking-tight">
+        Hai lavorato con questa impresa?
+      </h2>
+
+      <p className="mt-2 max-w-2xl text-sm leading-6 text-gray-600">
+        Condividi la tua esperienza e aiuta altri utenti a scegliere con
+        maggiore consapevolezza.
+      </p>
+    </div>
+  </div>
 
           {user ? (
-            <div className="mt-6 border rounded-3xl p-6 space-y-4">
+            <div className="mt-7 space-y-4 border-t pt-7">
               <input
                 value={title}
                 onChange={(e) =>
                   setTitle(e.target.value)
                 }
                 placeholder="Titolo recensione"
-                className="w-full border rounded-xl px-4 py-3"
+                className="w-full rounded-2xl border px-4 py-3 outline-none transition focus:border-black focus:ring-2 focus:ring-black/5"
               />
 
               <textarea
@@ -631,10 +700,10 @@ setImages(imageData || []);
                   setContent(e.target.value)
                 }
                 placeholder="Scrivi la tua esperienza..."
-                className="w-full border rounded-xl px-4 py-3 h-32"
+                className="h-36 w-full resize-y rounded-2xl border px-4 py-3 outline-none transition focus:border-black focus:ring-2 focus:ring-black/5"
               />
-              <div className="flex items-center gap-4 mt-6">
-              <div className="flex items-center gap-2">
+              <div className="mt-6 flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex flex-wrap items-center gap-1 sm:gap-2">
   {[1, 2, 3, 4, 5].map((star) => (
     <button
       key={star}
@@ -655,23 +724,53 @@ setImages(imageData || []);
 
 <Button
   onClick={submitReview}
+  className="w-full sm:w-auto"
 >
   Pubblica recensione
 </Button>
               </div>
             </div>
           ) : (
-            <div className="mt-6 bg-gray-50 border rounded-[32px] p-8 shadow-sm">
-              Accedi per lasciare una recensione.
-            </div>
+            <div className="mt-7 flex flex-col gap-4 rounded-2xl bg-gray-50 p-6 sm:flex-row sm:items-center sm:justify-between">
+  <div>
+    <p className="font-medium text-black">
+      Accedi per pubblicare una recensione
+    </p>
+
+    <p className="mt-1 text-sm text-gray-500">
+      La registrazione è gratuita e richiede pochi secondi.
+    </p>
+  </div>
+
+  <Button
+    href="/auth/login"
+    variant="secondary"
+    className="w-full sm:w-auto"
+  >
+    Accedi
+  </Button>
+</div>
           )}
         </div>
 
         {/* REVIEWS */}
         <div className="mt-12">
-          <h2 className="text-2xl font-semibold">
-            Recensioni
-          </h2>
+  <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+    <div>
+      <p className="text-sm font-medium text-gray-500">
+        Esperienze degli utenti
+      </p>
+
+      <h2 className="mt-1 text-2xl font-semibold tracking-tight">
+        Recensioni
+      </h2>
+    </div>
+
+    <span className="self-start rounded-full bg-gray-100 px-4 py-2 text-sm font-medium text-gray-600 sm:self-auto">
+      {reviews.length}{" "}
+      {reviews.length === 1 ? "recensione" : "recensioni"}
+    </span>
+  </div>
 
           <div className="mt-6 space-y-6">
             {reviews.length > 0 ? (
@@ -713,7 +812,30 @@ setImages(imageData || []);
               </div>
               ))
             ) : (
-              <p className="text-gray-500">Nessuna recensione disponibile.</p>
+              <div className="rounded-[32px] border bg-white px-6 py-14 text-center shadow-sm">
+              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-yellow-50 text-3xl">
+                ⭐
+              </div>
+            
+              <h3 className="mt-5 text-xl font-semibold text-black">
+                Questa impresa non ha ancora recensioni
+              </h3>
+            
+              <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-gray-500">
+                Sii il primo a raccontare la tua esperienza e aiuta altri utenti nella
+                scelta.
+              </p>
+            
+              {!user && (
+                <Button
+                  href="/auth/login"
+                  variant="secondary"
+                  className="mt-6"
+                >
+                  Accedi per recensire
+                </Button>
+              )}
+            </div>
             )}
           </div>
         </div>

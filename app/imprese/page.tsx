@@ -36,10 +36,16 @@ export default function CompaniesPage() {
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
+  
     const initialSearch = params.get("search");
+    const initialCategory = params.get("category");
   
     if (initialSearch) {
       setSearch(initialSearch);
+    }
+  
+    if (initialCategory) {
+      setCategory(initialCategory);
     }
   
     loadCompanies();
@@ -187,13 +193,21 @@ const availableCities = Array.from(
     onClose={() => setToastMessage("")}
   />
       <section className="max-w-7xl mx-auto px-6 py-12">
-        <h1 className="text-4xl font-bold">Imprese edili</h1>
+      <div>
+  <span className="inline-flex rounded-full border bg-white px-4 py-2 text-sm font-medium text-gray-600 shadow-sm">
+    Directory EdilRate
+  </span>
 
-        <p className="mt-3 text-gray-600">
-          Trova imprese edili recensite in Friuli Venezia Giulia.
-        </p>
+  <h1 className="mt-6 text-4xl font-bold tracking-tight sm:text-5xl">
+    Imprese edili
+  </h1>
 
-        <div className="mt-8 rounded-3xl border bg-white p-5 shadow-sm md:p-6">
+  <p className="mt-4 max-w-2xl leading-7 text-gray-600">
+    Cerca e confronta imprese edili recensite in Friuli Venezia Giulia.
+  </p>
+</div>
+
+        <div className="mt-8 rounded-3xl border bg-white p-5 shadow-sm sm:p-6">
   <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
     <div>
       <p className="text-sm font-medium text-gray-500">
@@ -396,7 +410,7 @@ const availableCities = Array.from(
       {sortedCompanies.map((company) => (
         <article
           key={company.id}
-          className="group overflow-hidden rounded-3xl border bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+          className="group overflow-hidden rounded-3xl border bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-lg"
         >
           <div className="grid md:grid-cols-[180px_1fr]">
           <div className="relative min-h-[220px] overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200 md:min-h-full">
@@ -414,8 +428,8 @@ const availableCities = Array.from(
         </div>
 
         <p className="mt-3 text-xs font-medium uppercase tracking-wide text-gray-500">
-          EdilRate
-        </p>
+  Foto non disponibile
+</p>
       </div>
     </div>
   )}
@@ -430,9 +444,9 @@ const availableCities = Array.from(
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-3">
                     {company.category && (
-                      <span className="rounded-full bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-700">
-                        {company.category}
-                      </span>
+                      <span className="rounded-full bg-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-700">
+                      {company.category}
+                    </span>
                     )}
 
                     {company.verified && (
@@ -463,42 +477,57 @@ const availableCities = Array.from(
                     </p>
                   )}
 
-                  <div className="mt-5 flex flex-wrap items-center gap-3">
-                    <div className="flex items-center gap-2">
-                      <span className="text-lg text-yellow-400">
-                        ★
-                      </span>
+<div className="mt-5 flex flex-wrap items-center gap-x-3 gap-y-2">
+  <div className="flex items-center text-lg">
+    <span className="text-yellow-400">
+      {"★".repeat(
+        Math.max(
+          0,
+          Math.min(5, Math.round(company.average_rating || 0))
+        )
+      )}
+    </span>
 
-                      <span className="font-semibold text-black">
-                        {company.average_rating?.toFixed(1) ?? "0.0"}
-                      </span>
-                    </div>
+    <span className="text-gray-200">
+      {"★".repeat(
+        5 -
+          Math.max(
+            0,
+            Math.min(5, Math.round(company.average_rating || 0))
+          )
+      )}
+    </span>
+  </div>
 
-                    <span className="text-sm text-gray-500">
-                      {company.review_count ?? 0}{" "}
-                      {(company.review_count ?? 0) === 1
-                        ? "recensione"
-                        : "recensioni"}
-                    </span>
-                  </div>
+  <span className="font-semibold text-black">
+    {company.average_rating?.toFixed(1) ?? "0.0"}
+  </span>
+
+  <span className="text-sm text-gray-500">
+    {company.review_count ?? 0}{" "}
+    {(company.review_count ?? 0) === 1
+      ? "recensione"
+      : "recensioni"}
+  </span>
+</div>
                 </div>
 
                 <div className="flex w-full shrink-0 flex-col gap-3 sm:flex-row lg:w-auto lg:flex-col">
-                  <Button
-                    href={`/imprese/${company.slug}`}
-                    variant="secondary"
-                    className="w-full lg:min-w-[190px]"
-                  >
-                    Vedi profilo
-                  </Button>
+  <Button
+    href={`/imprese/${company.slug}#preventivo`}
+    className="w-full lg:min-w-[190px]"
+  >
+    Richiedi preventivo
+  </Button>
 
-                  <Button
-                    href={`/imprese/${company.slug}#preventivo`}
-                    className="w-full lg:min-w-[190px]"
-                  >
-                    Richiedi preventivo
-                  </Button>
-                </div>
+  <Button
+    href={`/imprese/${company.slug}`}
+    variant="secondary"
+    className="w-full lg:min-w-[190px]"
+  >
+    Vedi profilo
+  </Button>
+</div>
               </div>
             </div>
           </div>

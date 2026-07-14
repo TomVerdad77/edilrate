@@ -14,8 +14,13 @@ export default function CheckEmailPage() {
         </h1>
 
         <p className="mt-5 text-gray-600 leading-7">
-          Ti abbiamo inviato un link di conferma. Apri la tua casella email e
-          clicca sul link per attivare il tuo account EdilRate.
+          Controlla la tua casella di posta e clicca sul link di conferma per
+          attivare il tuo account EdilRate.
+        </p>
+
+        <p className="mt-3 text-sm text-gray-500 leading-6">
+          Se non trovi l'email, verifica anche la cartella Spam o Posta indesiderata.
+          Se hai già un account, puoi accedere oppure recuperare la password.
         </p>
 
         <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">

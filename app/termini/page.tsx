@@ -1,3 +1,11 @@
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Termini e condizioni",
+  description:
+    "Consulta i termini e le condizioni di utilizzo della piattaforma EdilRate.",
+};
+
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 

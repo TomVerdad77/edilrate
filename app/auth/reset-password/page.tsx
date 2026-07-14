@@ -4,39 +4,72 @@ import { useState } from "react";
 import { supabase } from "@/src/lib/supabase";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import Toast from "@/components/ui/Toast";
 
 export default function ResetPasswordPage() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [success, setSuccess] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
+  const [toastType, setToastType] = useState<"success" | "error">("success");
+
+  const showToast = (
+    message: string,
+    type: "success" | "error" = "success"
+  ) => {
+    setToastType(type);
+    setToastMessage(message);
+  
+    window.setTimeout(() => {
+      setToastMessage("");
+    }, 3000);
+  };
 
   const updatePassword = async () => {
-    if (password !== confirmPassword) {
-      alert("Le password non coincidono.");
+    if (!password || !confirmPassword) {
+      showToast("Compila entrambi i campi password.", "error");
       return;
     }
-
+  
     if (password.length < 6) {
-      alert("La password deve contenere almeno 6 caratteri.");
+      showToast(
+        "La password deve contenere almeno 6 caratteri.",
+        "error"
+      );
       return;
     }
-
+  
+    if (password !== confirmPassword) {
+      showToast("Le password non coincidono.", "error");
+      return;
+    }
+  
+    setLoading(true);
+  
     const { error } = await supabase.auth.updateUser({
       password,
     });
-
+  
     if (error) {
-      alert(error.message);
+      showToast(error.message, "error");
+      setLoading(false);
       return;
     }
-
+  
     setSuccess(true);
+    setLoading(false);
   };
 
   return (
     <main className="min-h-screen bg-white text-black">
+       <Toast
+  message={toastMessage}
+  type={toastType}
+  onClose={() => setToastMessage("")}
+/>
       <Navbar />
-
+     
       <section className="max-w-md mx-auto px-6 py-20">
         <h1 className="text-4xl font-bold text-center">
           Nuova password
@@ -55,8 +88,8 @@ export default function ResetPasswordPage() {
                 Password aggiornata
               </h2>
 
-              <p className="mt-3 text-gray-600">
-                La tua password è stata modificata con successo.
+              <p className="mt-3 leading-7 text-gray-600">
+                La password è stata aggiornata correttamente. Ora puoi accedere al tuo account.
               </p>
 
               <a
@@ -84,12 +117,14 @@ export default function ResetPasswordPage() {
                 className="w-full border rounded-xl px-4 py-3"
               />
 
-              <button
-                onClick={updatePassword}
-                className="w-full bg-black text-white rounded-xl px-4 py-3 hover:bg-gray-800 transition"
+            <button
+              type="button"
+              onClick={updatePassword}
+              disabled={loading}
+              className="w-full rounded-xl bg-black px-4 py-3 text-white transition hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                Aggiorna password
-              </button>
+              {loading ? "Aggiornamento..." : "Aggiorna password"}
+            </button>
             </>
           )}
         </div>

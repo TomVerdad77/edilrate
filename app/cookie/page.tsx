@@ -1,3 +1,11 @@
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Cookie Policy",
+  description:
+    "Informazioni sull'utilizzo dei cookie da parte di EdilRate.",
+};
+
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 export default function CookiePage() {

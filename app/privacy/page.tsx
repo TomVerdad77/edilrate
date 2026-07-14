@@ -1,3 +1,11 @@
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Privacy Policy",
+  description:
+    "Informativa sulla privacy di EdilRate e trattamento dei dati personali.",
+};
+
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 

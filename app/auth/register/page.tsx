@@ -4,45 +4,82 @@ import { useState } from "react";
 import { supabase } from "@/src/lib/supabase";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import Toast from "@/components/ui/Toast";
 
 export default function RegisterPage() {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
+  const [toastType, setToastType] = useState<"success" | "error">("success");
+
+  const showToast = (
+    message: string,
+    type: "success" | "error" = "success"
+  ) => {
+    setToastType(type);
+    setToastMessage(message);
+  
+    window.setTimeout(() => {
+      setToastMessage("");
+    }, 3000);
+  };
 
   const register = async () => {
     if (!fullName.trim()) {
-      alert("Inserisci il tuo nome.");
+      showToast("Inserisci il tuo nome e cognome.", "error");
       return;
     }
-
+  
+    if (!email.trim()) {
+      showToast("Inserisci un indirizzo email.", "error");
+      return;
+    }
+  
+    if (password.length < 6) {
+      showToast(
+        "La password deve contenere almeno 6 caratteri.",
+        "error"
+      );
+      return;
+    }
+  
     if (password !== confirmPassword) {
-      alert("Le password non coincidono.");
+      showToast("Le password non coincidono.", "error");
       return;
     }
-
+  
+    setLoading(true);
+  
     const { error } = await supabase.auth.signUp({
-      email,
+      email: email.trim(),
       password,
       options: {
         data: {
-          full_name: fullName,
+          full_name: fullName.trim(),
         },
         emailRedirectTo: window.location.origin,
       },
     });
-
+  
     if (error) {
-      alert(error.message);
+      showToast(error.message, "error");
+      setLoading(false);
       return;
     }
-
+    
     window.location.href = "/auth/check-email";
   };
 
   return (
     <main className="min-h-screen bg-white text-black">
+      <Toast
+  message={toastMessage}
+  type={toastType}
+  onClose={() => setToastMessage("")}
+/>
       <Navbar />
 
       <section className="max-w-md mx-auto px-6 py-20">
@@ -60,7 +97,7 @@ export default function RegisterPage() {
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
             placeholder="Nome e cognome"
-            className="w-full border rounded-xl px-4 py-3"
+            className="w-full rounded-xl border px-4 py-3 outline-none transition focus:border-black focus:ring-2 focus:ring-black/5"
           />
 
           <input
@@ -68,7 +105,7 @@ export default function RegisterPage() {
             onChange={(e) => setEmail(e.target.value)}
             placeholder="Email"
             type="email"
-            className="w-full border rounded-xl px-4 py-3"
+            className="w-full rounded-xl border px-4 py-3 outline-none transition focus:border-black focus:ring-2 focus:ring-black/5"
           />
 
           <input
@@ -76,7 +113,7 @@ export default function RegisterPage() {
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Password"
             type="password"
-            className="w-full border rounded-xl px-4 py-3"
+            className="w-full rounded-xl border px-4 py-3 outline-none transition focus:border-black focus:ring-2 focus:ring-black/5"
           />
 
           <input
@@ -84,15 +121,17 @@ export default function RegisterPage() {
             onChange={(e) => setConfirmPassword(e.target.value)}
             placeholder="Conferma password"
             type="password"
-            className="w-full border rounded-xl px-4 py-3"
+            className="w-full rounded-xl border px-4 py-3 outline-none transition focus:border-black focus:ring-2 focus:ring-black/5"
           />
 
-          <button
+            <button
+            type="button"
             onClick={register}
-            className="w-full bg-black text-white rounded-xl px-4 py-3 hover:bg-gray-800 transition"
-          >
-            Crea account
-          </button>
+            disabled={loading}
+            className="w-full rounded-xl bg-black px-4 py-3 text-white transition hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+            {loading ? "Registrazione in corso..." : "Crea account"}
+            </button>
 
           <p className="text-center text-sm text-gray-600">
             Hai già un account?{" "}

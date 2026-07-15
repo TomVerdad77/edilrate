@@ -302,13 +302,6 @@ useEffect(() => {
       <div>📍 Focus Friuli Venezia Giulia</div>
     </div>
   </div>
-  <p className="mt-4 text-sm font-medium text-gray-600">
-  Oltre{" "}
-  <span className="font-semibold text-black">
-    {stats.companies} imprese edili
-  </span>{" "}
-  già presenti in Friuli Venezia Giulia.
-</p>
 </section>
 
 

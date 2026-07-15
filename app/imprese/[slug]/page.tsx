@@ -23,8 +23,11 @@ const [quotePhone, setQuotePhone] = useState("");
 const [quoteMessage, setQuoteMessage] = useState("");
 const [quoteSent, setQuoteSent] = useState(false);
 const [claimSent, setClaimSent] = useState(false);
+const [userReview, setUserReview] = useState<any>(null);
+const [existingClaim, setExistingClaim] = useState<any>(null);
 const [toastMessage, setToastMessage] = useState("");
 const [toastType, setToastType] = useState<"success" | "error">("success");
+
 
   const showToast = (
     message: string,
@@ -45,65 +48,143 @@ const [toastType, setToastType] = useState<"success" | "error">("success");
   const loadData = async () => {
     const path = window.location.pathname;
     const slug = path.split("/").pop();
-
+  
     const {
-      data: { user },
+      data: { user: currentUser },
     } = await supabase.auth.getUser();
-
-    setUser(user);
-
-    const { data: companyData } = await supabase
+  
+    setUser(currentUser);
+  
+    const { data: companyData, error: companyError } = await supabase
       .from("companies")
       .select("*")
       .eq("slug", slug)
       .single();
-
-    setCompany(companyData);
-
-    if (companyData) {
-      const { data: reviewsData } = await supabase
-        .from("reviews")
-        .select(`
-          *,
-          profiles (
-            full_name
-          )
-        `)
-        .eq("company_id", companyData.id)
-        .order("created_at", {
-          ascending: false,
-        });
-
-      setReviews(reviewsData || []);
-      const { data: imageData } = await supabase
-  .from("company_images")
-  .select("*")
-  .eq("company_id", companyData.id)
-  .order("is_cover", {
-    ascending: false,
-  })
-  .order("created_at", {
-    ascending: false,
-  });
-
-setImages(imageData || []);
+  
+    if (companyError || !companyData) {
+      showToast(
+        companyError?.message || "Azienda non trovata.",
+        "error"
+      );
+      return;
     }
+  
+    setCompany(companyData);
+  
+    const { data: reviewsData, error: reviewsError } = await supabase
+      .from("reviews")
+      .select(`
+        *,
+        profiles (
+          full_name
+        )
+      `)
+      .eq("company_id", companyData.id)
+      .order("created_at", {
+        ascending: false,
+      });
+  
+    if (reviewsError) {
+      showToast(reviewsError.message, "error");
+    }
+  
+    const loadedReviews = reviewsData || [];
+  
+    setReviews(loadedReviews);
+  
+    if (currentUser) {
+      const existingUserReview = loadedReviews.find(
+        (review) => review.user_id === currentUser.id
+      );
+  
+      setUserReview(existingUserReview || null);
+  
+      if (existingUserReview) {
+        setTitle(existingUserReview.title || "");
+        setContent(existingUserReview.content || "");
+        setRating(existingUserReview.rating || 5);
+      } else {
+        setTitle("");
+        setContent("");
+        setRating(5);
+      }
+  
+      const { data: claimData, error: claimError } = await supabase
+        .from("claim_requests")
+        .select("id, status")
+        .eq("company_id", companyData.id)
+        .eq("user_id", currentUser.id)
+        .in("status", ["pending", "approved"])
+        .maybeSingle();
+  
+      if (claimError) {
+        showToast(claimError.message, "error");
+      }
+  
+      setExistingClaim(claimData || null);
+      setClaimSent(claimData?.status === "pending");
+    } else {
+      setUserReview(null);
+      setExistingClaim(null);
+      setClaimSent(false);
+    }
+  
+    const { data: imageData, error: imageError } = await supabase
+      .from("company_images")
+      .select("*")
+      .eq("company_id", companyData.id)
+      .order("is_cover", {
+        ascending: false,
+      })
+      .order("created_at", {
+        ascending: false,
+      });
+  
+    if (imageError) {
+      showToast(imageError.message, "error");
+    }
+  
+    setImages(imageData || []);
   };
 
   const submitClaimRequest = async () => {
     if (!user || !company) return;
   
-    const { error } = await supabase.from("claim_requests").insert({
-      company_id: company.id,
-      user_id: user.id,
-    });
-  
-    if (error) {
-      showToast(error.message, "error");
+    if (existingClaim) {
+      showToast(
+        existingClaim.status === "approved"
+          ? "Questa azienda è già collegata al tuo account."
+          : "Hai già inviato una richiesta per questa azienda.",
+        "error"
+      );
       return;
     }
   
-    setClaimSent(true);
+    const { data, error } = await supabase
+      .from("claim_requests")
+      .insert({
+        company_id: company.id,
+        user_id: user.id,
+        status: "pending",
+      })
+      .select("id, status")
+      .single();
+  
+    if (error) {
+      if (error.code === "23505") {
+        showToast(
+          "Hai già inviato una richiesta per questa azienda.",
+          "error"
+        );
+      } else {
+        showToast(error.message, "error");
+      }
+  
+      return;
+    }
+  
+    setExistingClaim(data);
+  
     showToast(
       "Richiesta di rivendicazione inviata correttamente. Sarà verificata dal team EdilRate."
     );
@@ -156,24 +237,48 @@ setImages(imageData || []);
       return;
     }
   
-    const { error } = await supabase.from("reviews").insert({
-      company_id: company.id,
-      user_id: user.id,
-      rating,
-      title: title.trim(),
-      content: content.trim(),
-    });
+    if (userReview) {
+      const { error } = await supabase
+        .from("reviews")
+        .update({
+          rating,
+          title: title.trim(),
+          content: content.trim(),
+        })
+        .eq("id", userReview.id)
+        .eq("user_id", user.id);
   
-    if (error) {
-      showToast(error.message, "error");
-      return;
+      if (error) {
+        showToast(error.message, "error");
+        return;
+      }
+  
+      showToast("Recensione aggiornata correttamente.");
+    } else {
+      const { error } = await supabase.from("reviews").insert({
+        company_id: company.id,
+        user_id: user.id,
+        rating,
+        title: title.trim(),
+        content: content.trim(),
+      });
+  
+      if (error) {
+        if (error.code === "23505") {
+          showToast(
+            "Hai già pubblicato una recensione per questa impresa.",
+            "error"
+          );
+        } else {
+          showToast(error.message, "error");
+        }
+  
+        return;
+      }
+  
+      showToast("Recensione pubblicata correttamente.");
     }
   
-    setTitle("");
-    setContent("");
-    setRating(5);
-  
-    showToast("Recensione pubblicata correttamente.");
     await loadData();
   };
 
@@ -343,7 +448,7 @@ setImages(imageData || []);
   Richiedi preventivo
 </Button>
 
-{user && !company.claimed && !claimSent && (
+{user && !company.claimed && !existingClaim && (
   <Button
     variant="secondary"
     onClick={submitClaimRequest}
@@ -352,6 +457,14 @@ setImages(imageData || []);
     Rivendica questa azienda
   </Button>
 )}
+
+{user &&
+  !company.claimed &&
+  existingClaim?.status === "pending" && (
+    <div className="inline-flex items-center rounded-2xl bg-blue-50 px-5 py-4 text-sm font-medium text-blue-700">
+      Richiesta di rivendicazione già inviata
+    </div>
+  )}
 
 {company.claimed && (
   <div className="inline-flex items-center rounded-2xl bg-green-50 px-5 py-4 text-sm font-medium text-green-700">
@@ -673,12 +786,15 @@ setImages(imageData || []);
       </p>
 
       <h2 className="mt-1 text-2xl font-semibold tracking-tight">
-        Hai lavorato con questa impresa?
+  {userReview
+    ? "Modifica la tua recensione"
+    : "Hai lavorato con questa impresa?"}
       </h2>
 
       <p className="mt-2 max-w-2xl text-sm leading-6 text-gray-600">
-        Condividi la tua esperienza e aiuta altri utenti a scegliere con
-        maggiore consapevolezza.
+        {userReview
+       ? "Aggiorna valutazione, titolo o testo della recensione già pubblicata."
+       : "Condividi la tua esperienza e aiuta altri utenti a scegliere con maggiore consapevolezza."}
       </p>
     </div>
   </div>
@@ -726,7 +842,9 @@ setImages(imageData || []);
   onClick={submitReview}
   className="w-full sm:w-auto"
 >
-  Pubblica recensione
+  {userReview
+    ? "Salva modifiche"
+    : "Pubblica recensione"}
 </Button>
               </div>
             </div>

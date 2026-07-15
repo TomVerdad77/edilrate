@@ -5,14 +5,10 @@ import Footer from "@/components/Footer";
 import { useEffect, useState } from "react";
 import { supabase } from "@/src/lib/supabase";
 
-const categories = [
-  "Ristrutturazioni",
-  "Muratori",
-  "Idraulici",
-  "Elettricisti",
-  "Serramenti",
-  "Imbianchini",
-];
+type PopularCategory = {
+  name: string;
+  count: number;
+};
 
 type RatingDistributionItem = {
   star: number;
@@ -46,6 +42,53 @@ const [reviewsCount, setReviewsCount] = useState(0);
 const [quotesCount, setQuotesCount] = useState(0);
 const [claimedCount, setClaimedCount] = useState(0);
 
+const [popularCategories, setPopularCategories] = useState<
+  PopularCategory[]
+>([]);
+
+const loadPopularCategories = async () => {
+  const { data, error } = await supabase
+    .from("companies")
+    .select("category");
+
+  if (error) {
+    console.error("Errore caricamento categorie:", error.message);
+    return;
+  }
+
+  const categoryMap = new Map<
+    string,
+    PopularCategory
+  >();
+
+  for (const company of data || []) {
+    const category = company.category?.trim();
+
+    if (!category) continue;
+
+    const normalizedCategory = category.toLowerCase();
+    const existingCategory =
+      categoryMap.get(normalizedCategory);
+
+    if (existingCategory) {
+      existingCategory.count += 1;
+    } else {
+      categoryMap.set(normalizedCategory, {
+        name: category,
+        count: 1,
+      });
+    }
+  }
+
+  const sortedCategories = Array.from(
+    categoryMap.values()
+  )
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 6);
+
+  setPopularCategories(sortedCategories);
+};
+
 const [stats, setStats] = useState({
   companies: 0,
   reviews: 0,
@@ -54,6 +97,7 @@ const [stats, setStats] = useState({
 useEffect(() => {
   loadFeaturedCompanies();
   loadStats();
+  loadPopularCategories();
 }, []);
   
   const loadStats = async () => {
@@ -258,32 +302,16 @@ useEffect(() => {
       <div>📍 Focus Friuli Venezia Giulia</div>
     </div>
   </div>
+  <p className="mt-4 text-sm font-medium text-gray-600">
+  Oltre{" "}
+  <span className="font-semibold text-black">
+    {stats.companies} imprese edili
+  </span>{" "}
+  già presenti in Friuli Venezia Giulia.
+</p>
 </section>
 
-{/* STATS */}
-<section className="max-w-7xl mx-auto px-6 pb-24">
-  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-4 md:gap-6">
-    <div className="rounded-3xl border bg-white p-6 text-center shadow-sm md:p-8">
-      <div className="text-4xl font-bold">{companiesCount}</div>
-      <p className="mt-3 text-gray-600">Aziende presenti</p>
-    </div>
 
-    <div className="rounded-3xl border bg-white p-6 text-center shadow-sm md:p-8">
-      <div className="text-4xl font-bold">{reviewsCount}</div>
-      <p className="mt-3 text-gray-600">Recensioni</p>
-    </div>
-
-    <div className="rounded-3xl border bg-white p-6 text-center shadow-sm md:p-8">
-      <div className="text-4xl font-bold">{quotesCount}</div>
-      <p className="mt-3 text-gray-600">Preventivi inviati</p>
-    </div>
-
-    <div className="rounded-3xl border bg-white p-6 text-center shadow-sm md:p-8">
-      <div className="text-4xl font-bold">{claimedCount}</div>
-      <p className="mt-3 text-gray-600">Profili rivendicati</p>
-    </div>
-  </div>
-</section>
 
 {/* COME FUNZIONA */}
 <section className="max-w-7xl mx-auto px-6 pb-24">
@@ -314,7 +342,7 @@ useEffect(() => {
       <div className="text-4xl">⭐</div>
 
       <h3 className="mt-6 text-xl font-semibold">
-        Confronta le aziende
+        Leggi le opinioni
       </h3>
 
       <p className="mt-3 text-gray-600">
@@ -337,27 +365,49 @@ useEffect(() => {
 </section>
 
       {/* CATEGORIES */}
-      <section className="max-w-7xl mx-auto px-6 pb-20">
-        <div className="flex items-center justify-between mb-8">
-          <h2 className="text-3xl font-bold">
-            Categorie popolari
-          </h2>
-        </div>
+<section className="max-w-7xl mx-auto px-6 pb-20">
+  <div className="mb-8 flex items-center justify-between">
+    <h2 className="text-3xl font-bold">
+      Categorie popolari
+    </h2>
 
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
-        {categories.map((category) => (
-  <a
-    key={category}
-    href={`/imprese?category=${encodeURIComponent(category)}`}
-    className="flex min-h-[88px] items-center justify-center rounded-2xl border p-4 text-center transition-all duration-300 hover:-translate-y-1 hover:bg-gray-50 hover:shadow-lg sm:p-6"
-  >
-    <h3 className="font-medium text-center">
-      {category}
-    </h3>
-  </a>
-))}
-        </div>
-      </section>
+    <a
+      href="/categorie"
+      className="text-sm font-medium text-gray-600 transition hover:text-black"
+    >
+      Vedi tutte →
+    </a>
+  </div>
+
+  {popularCategories.length > 0 ? (
+    <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+      {popularCategories.map((category) => (
+        <a
+          key={category.name}
+          href={`/imprese?category=${encodeURIComponent(
+            category.name
+          )}`}
+          className="group flex min-h-[110px] flex-col items-center justify-center rounded-2xl border p-4 text-center transition-all duration-300 hover:-translate-y-1 hover:bg-gray-50 hover:shadow-lg sm:p-6"
+        >
+          <h3 className="font-medium">
+            {category.name}
+          </h3>
+
+          <p className="mt-2 text-xs text-gray-500">
+            {category.count}{" "}
+            {category.count === 1
+              ? "impresa"
+              : "imprese"}
+          </p>
+        </a>
+      ))}
+    </div>
+  ) : (
+    <div className="rounded-2xl border bg-gray-50 p-8 text-center text-gray-600">
+      Nessuna categoria disponibile.
+    </div>
+  )}
+</section>
 
       {/* FEATURED COMPANIES */}
 <section className="max-w-7xl mx-auto px-6 pb-28">

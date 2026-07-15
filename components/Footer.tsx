@@ -7,29 +7,33 @@ export default function Footer() {
             <img src="/logo-edilrate.png" alt="EdilRate" className="h-10 w-auto" />
   
               <p className="mt-2 text-sm text-gray-600">
-                La piattaforma dedicata alle imprese edili del Friuli Venezia Giulia.
+              Trova imprese edili affidabili, leggi recensioni e richiedi preventivi in Friuli Venezia Giulia.
               </p>
             </div>
   
             <div className="flex flex-wrap gap-6 text-sm text-gray-600">
-              <a href="/chi-siamo" className="hover:text-black">
+              <a href="/chi-siamo" className="transition hover:text-black">
                 Chi siamo
               </a>
   
-              <a href="/privacy" className="hover:text-black">
+              <a href="/privacy" className="transition hover:text-black">
                 Privacy
               </a>
   
-              <a href="/termini" className="hover:text-black">
+              <a href="/termini" className="transition hover:text-black">
                 Termini
               </a>
   
-              <a href="/cookie" className="hover:text-black">
+              <a href="/cookie" className="transition hover:text-black">
                 Cookie
               </a>
   
-              <a href="/contatti" className="hover:text-black">
+              <a href="/contatti" className="transition hover:text-black">
                 Contatti
+              </a>
+
+              <a href="/feedback" className="transition hover:text-black">
+                Feedback
               </a>
             </div>
           </div>

@@ -72,22 +72,24 @@ export default function FeedbackPage() {
 
 <Navbar />
       <section className="max-w-4xl mx-auto px-6 py-20">
-        <h1 className="text-5xl font-bold">Feedback</h1>
+      <h1 className="text-5xl font-bold">
+        Aiutaci a migliorare EdilRate
+      </h1>
 
-        <p className="mt-6 text-lg text-gray-600">
-          Aiutaci a migliorare EdilRate. Puoi inviare suggerimenti,
-          segnalare problemi o proporre nuove funzionalità.
-        </p>
+      <p className="mt-6 text-lg leading-8 text-gray-600">
+        Hai trovato un problema, hai un suggerimento o vorresti vedere una nuova funzionalità?
+        Ogni feedback viene letto dal team EdilRate e ci aiuta a migliorare la piattaforma.
+      </p>
 
         <div className="mt-10 border rounded-3xl p-6 md:p-8 space-y-5">
           {sent && (
             <div className="rounded-2xl border border-green-200 bg-green-50 p-4 text-green-700">
             <p className="font-medium">
-              Grazie per il tuo contributo.
+              🎉 Grazie per il tuo contributo!
             </p>
-          
+
             <p className="mt-1 text-sm">
-              Il feedback è stato inviato correttamente al team EdilRate.
+              Ogni suggerimento viene letto dal team EdilRate e ci aiuta a migliorare continuamente la piattaforma.
             </p>
           </div>
           )}
@@ -101,13 +103,13 @@ export default function FeedbackPage() {
             <option>Segnalazione bug</option>
             <option>Richiesta nuova funzione</option>
             <option>Partnership</option>
-            <option>Altro</option>
+            <option>Domanda generale</option>
           </select>
 
           <input
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="Nome (opzionale)"
+            placeholder="Nome"
             className="w-full rounded-xl border px-4 py-3 outline-none transition focus:border-black focus:ring-2 focus:ring-black/5"
           />
 

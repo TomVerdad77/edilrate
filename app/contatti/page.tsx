@@ -27,7 +27,7 @@ export default function ContattiPage() {
             </p>
   
             <p className="mt-3 text-gray-700">
-              Area iniziale: Friuli Venezia Giulia, con focus su Trieste.
+              Area iniziale: Friuli Venezia Giulia.
             </p>
           </div>
         </section>

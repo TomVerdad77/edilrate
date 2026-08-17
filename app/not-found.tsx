@@ -1,10 +1,8 @@
 import Button from "@/components/ui/Button";
-import Navbar from "@/components/Navbar";
 
 export default function NotFound() {
   return (
     <main className="min-h-screen bg-white text-black flex items-center justify-center px-6">
-      <Navbar />
       <section className="max-w-2xl text-center">
         <img
           src="/logo-edilrate.png"

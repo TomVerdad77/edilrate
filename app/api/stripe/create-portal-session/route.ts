@@ -2,14 +2,6 @@ import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { stripe } from "@/src/lib/stripe";
 
-const priceMap = {
-  monthly: process.env.STRIPE_PRICE_MONTHLY,
-  semiannual: process.env.STRIPE_PRICE_SEMIANNUAL,
-  annual: process.env.STRIPE_PRICE_ANNUAL,
-} as const;
-
-type Plan = keyof typeof priceMap;
-
 export async function POST(request: Request) {
   try {
     const authHeader = request.headers.get("authorization");
@@ -40,20 +32,9 @@ export async function POST(request: Request) {
       );
     }
 
-    const body = await request.json();
-    const plan = body.plan as Plan;
-    const priceId = priceMap[plan];
-
-    if (!priceId) {
-      return NextResponse.json(
-        { error: "Piano non valido" },
-        { status: 400 }
-      );
-    }
-
     const { data: company, error: companyError } = await supabase
       .from("companies")
-      .select("id, name, claimed_by")
+      .select("id")
       .eq("claimed_by", user.id)
       .maybeSingle();
 
@@ -68,55 +49,53 @@ export async function POST(request: Request) {
 
     if (!company) {
       return NextResponse.json(
-        {
-          error:
-            "Devi avere un'impresa rivendicata prima di attivare EdilRate PRO",
-        },
+        { error: "Nessuna impresa collegata" },
         { status: 403 }
+      );
+    }
+
+    const { data: subscription, error: subscriptionError } =
+      await supabase
+        .from("subscriptions")
+        .select("stripe_customer_id")
+        .eq("company_id", company.id)
+        .maybeSingle();
+
+    if (subscriptionError) {
+      console.error(
+        "Subscription lookup error:",
+        subscriptionError
+      );
+
+      return NextResponse.json(
+        { error: "Errore durante il recupero dell'abbonamento" },
+        { status: 500 }
+      );
+    }
+
+    if (!subscription?.stripe_customer_id) {
+      return NextResponse.json(
+        { error: "Nessun abbonamento Stripe trovato" },
+        { status: 404 }
       );
     }
 
     const origin = new URL(request.url).origin;
 
-    const checkoutSession =
-      await stripe.checkout.sessions.create({
-        mode: "subscription",
-
-        line_items: [
-          {
-            price: priceId,
-            quantity: 1,
-          },
-        ],
-
-        customer_email: user.email,
-
-        metadata: {
-          company_id: company.id,
-          user_id: user.id,
-          plan,
-        },
-
-        subscription_data: {
-          metadata: {
-            company_id: company.id,
-            user_id: user.id,
-            plan,
-          },
-        },
-
-        success_url: `${origin}/pro/success?session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${origin}/pro?checkout=cancelled`,
+    const portalSession =
+      await stripe.billingPortal.sessions.create({
+        customer: subscription.stripe_customer_id,
+        return_url: `${origin}/dashboard`,
       });
 
     return NextResponse.json({
-      url: checkoutSession.url,
+      url: portalSession.url,
     });
   } catch (error) {
-    console.error("Stripe checkout error:", error);
+    console.error("Stripe portal error:", error);
 
     return NextResponse.json(
-      { error: "Impossibile avviare il pagamento" },
+      { error: "Impossibile aprire la gestione dell'abbonamento" },
       { status: 500 }
     );
   }

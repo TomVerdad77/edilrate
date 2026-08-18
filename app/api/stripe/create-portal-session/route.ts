@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { stripe } from "@/src/lib/stripe";
+import { supabaseAdmin } from "@/src/lib/supabase-admin";
 
 export async function POST(request: Request) {
   try {
@@ -15,7 +16,8 @@ export async function POST(request: Request) {
 
     const token = authHeader.replace("Bearer ", "");
 
-    const supabase = createClient(
+    // Client usato SOLO per verificare il token dell'utente
+    const supabaseAuth = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
     );
@@ -23,7 +25,7 @@ export async function POST(request: Request) {
     const {
       data: { user },
       error: userError,
-    } = await supabase.auth.getUser(token);
+    } = await supabaseAuth.auth.getUser(token);
 
     if (userError || !user) {
       return NextResponse.json(
@@ -32,11 +34,15 @@ export async function POST(request: Request) {
       );
     }
 
-    const { data: company, error: companyError } = await supabase
-      .from("companies")
-      .select("id")
-      .eq("claimed_by", user.id)
-      .maybeSingle();
+    // Da qui usiamo il client server-only.
+    // La sicurezza viene dal fatto che cerchiamo SOLO
+    // l'azienda rivendicata dall'utente appena verificato.
+    const { data: company, error: companyError } =
+      await supabaseAdmin
+        .from("companies")
+        .select("id")
+        .eq("claimed_by", user.id)
+        .maybeSingle();
 
     if (companyError) {
       console.error("Company lookup error:", companyError);
@@ -55,9 +61,9 @@ export async function POST(request: Request) {
     }
 
     const { data: subscription, error: subscriptionError } =
-      await supabase
+      await supabaseAdmin
         .from("subscriptions")
-        .select("stripe_customer_id")
+        .select("stripe_customer_id, status")
         .eq("company_id", company.id)
         .maybeSingle();
 

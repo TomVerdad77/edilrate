@@ -73,12 +73,26 @@ export async function POST(request: Request) {
               company_id: companyId,
               stripe_customer_id: customerId,
               stripe_subscription_id: subscription.id,
-              stripe_price_id: subscription.items.data[0]?.price.id ?? null,
+              stripe_price_id:
+                subscription.items.data[0]?.price.id ?? null,
               plan,
               status: subscription.status,
-              current_period_end: subscription.items.data[0]?.current_period_end
-  ? new Date(subscription.items.data[0].current_period_end * 1000).toISOString()
-  : null,
+
+              current_period_end:
+                subscription.items.data[0]?.current_period_end
+                  ? new Date(
+                      subscription.items.data[0].current_period_end * 1000
+                    ).toISOString()
+                  : null,
+
+              cancel_at: subscription.cancel_at
+                ? new Date(subscription.cancel_at * 1000).toISOString()
+                : null,
+
+              cancel_at_period_end:
+                subscription.cancel_at_period_end,
+
+              updated_at: new Date().toISOString(),
             },
             {
               onConflict: "company_id",
@@ -93,7 +107,8 @@ export async function POST(request: Request) {
       }
 
       case "customer.subscription.updated": {
-        const subscription = event.data.object as Stripe.Subscription;
+        const subscription =
+          event.data.object as Stripe.Subscription;
 
         const companyId = subscription.metadata?.company_id;
         const plan = subscription.metadata?.plan;
@@ -105,12 +120,28 @@ export async function POST(request: Request) {
         const { error } = await supabaseAdmin
           .from("subscriptions")
           .update({
-            stripe_price_id: subscription.items.data[0]?.price.id ?? null,
+            stripe_price_id:
+              subscription.items.data[0]?.price.id ?? null,
+
             plan: plan ?? undefined,
+
             status: subscription.status,
-            current_period_end: subscription.items.data[0]?.current_period_end
-  ? new Date(subscription.items.data[0].current_period_end * 1000).toISOString()
-  : null,
+
+            current_period_end:
+              subscription.items.data[0]?.current_period_end
+                ? new Date(
+                    subscription.items.data[0].current_period_end * 1000
+                  ).toISOString()
+                : null,
+
+            cancel_at: subscription.cancel_at
+              ? new Date(subscription.cancel_at * 1000).toISOString()
+              : null,
+
+            cancel_at_period_end:
+              subscription.cancel_at_period_end,
+
+            updated_at: new Date().toISOString(),
           })
           .eq("company_id", companyId);
 
@@ -122,7 +153,8 @@ export async function POST(request: Request) {
       }
 
       case "customer.subscription.deleted": {
-        const subscription = event.data.object as Stripe.Subscription;
+        const subscription =
+          event.data.object as Stripe.Subscription;
 
         const companyId = subscription.metadata?.company_id;
 
@@ -134,7 +166,14 @@ export async function POST(request: Request) {
           .from("subscriptions")
           .update({
             status: subscription.status,
-            cancel_at_period_end: subscription.cancel_at_period_end,
+
+            cancel_at: subscription.cancel_at
+              ? new Date(subscription.cancel_at * 1000).toISOString()
+              : null,
+
+            cancel_at_period_end:
+              subscription.cancel_at_period_end,
+
             updated_at: new Date().toISOString(),
           })
           .eq("company_id", companyId);

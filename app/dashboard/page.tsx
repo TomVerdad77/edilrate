@@ -6,10 +6,12 @@ import Button from "@/components/ui/Button";
 import { useEffect, useState } from "react";
 import { supabase } from "@/src/lib/supabase";
 import Toast from "@/components/ui/Toast";
+import ManageSubscriptionButton from "./components/ManageSubscriptionButton";
 
 export default function DashboardPage() {
   const [user, setUser] = useState<any>(null);
   const [company, setCompany] = useState<any>(null);
+  const [subscription, setSubscription] = useState<any>(null);
   const [quotes, setQuotes] = useState<any[]>([]);
   const [images, setImages] = useState<any[]>([]);
   const [uploading, setUploading] = useState(false);
@@ -191,6 +193,18 @@ if (!user) {
       
       setCompany(companyData);
     
+      const { data: subscriptionData, error: subscriptionError } = await supabase
+      .from("subscriptions")
+      .select("*")
+      .eq("company_id", companyData.id)
+      .maybeSingle();
+    
+    if (subscriptionError) {
+      console.error("Errore caricamento abbonamento:", subscriptionError);
+    }
+    
+    setSubscription(subscriptionData || null);
+
     setDescription(companyData.description || "");
     setPhone(companyData.phone || "");
     setEmail(companyData.email || "");
@@ -283,6 +297,10 @@ setImages(imageData || []);
     }
   };
 
+  const isPro =
+  subscription?.status === "active" ||
+  subscription?.status === "trialing";
+
   if (!user) {
     return (
       <main className="min-h-screen p-10">
@@ -336,6 +354,12 @@ setImages(imageData || []);
             Profilo rivendicato
           </span>
         )}
+
+{isPro && (
+  <span className="rounded-full bg-amber-100 px-4 py-2 text-sm font-semibold text-amber-800">
+    ⭐ EdilRate PRO
+  </span>
+)}
       </div>
 
       <h1 className="mt-6 text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl">
@@ -419,6 +443,55 @@ setImages(imageData || []);
     </div>
   </div>
 </div>
+
+{isPro && (
+  <div className="mt-6 rounded-3xl border bg-white p-6 shadow-sm md:p-7">
+    <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+      <div>
+        <div className="flex flex-wrap items-center gap-3">
+          <h2 className="text-xl font-semibold">
+            Abbonamento EdilRate PRO
+          </h2>
+
+          <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">
+            Attivo
+          </span>
+        </div>
+
+        <p className="mt-2 text-sm text-gray-600">
+          Piano{" "}
+          <span className="font-medium text-black">
+            {subscription.plan === "monthly"
+              ? "Mensile"
+              : subscription.plan === "semiannual"
+              ? "Semestrale"
+              : subscription.plan === "annual"
+              ? "Annuale"
+              : subscription.plan}
+          </span>
+        </p>
+
+        {subscription.current_period_end && (
+          <p className="mt-1 text-sm text-gray-500">
+            {subscription.cancel_at
+  ? "Accesso PRO disponibile fino al "
+  : "Prossimo rinnovo: "}
+            {new Date(subscription.current_period_end).toLocaleDateString(
+              "it-IT",
+              {
+                day: "2-digit",
+                month: "long",
+                year: "numeric",
+              }
+            )}
+          </p>
+        )}
+      </div>
+
+      <ManageSubscriptionButton />
+    </div>
+  </div>
+)}
 
         <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         <div className="bg-white border rounded-3xl p-5 md:p-6 shadow-sm">

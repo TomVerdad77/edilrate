@@ -95,68 +95,86 @@ if (error) {
   const approveClaim = async (claim: any) => {
     setProcessingClaimId(claim.id);
   
-    const { error: companyError } = await supabase
-      .from("companies")
-      .update({
-        claimed: true,
-        claimed_by: claim.user_id,
-      })
-      .eq("id", claim.company_id);
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
   
-    if (companyError) {
-      showToast(companyError.message, "error");
+    if (!session?.access_token) {
+      showToast("Sessione non valida.", "error");
       setProcessingClaimId(null);
       return;
     }
   
-    const { error: claimError } = await supabase
-      .from("claim_requests")
-      .update({
-        status: "approved",
-      })
-      .eq("id", claim.id);
+    const response = await fetch("/api/admin/claims", {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${session.access_token}`,
+      },
+      body: JSON.stringify({
+        claim_id: claim.id,
+        action: "approve",
+      }),
+    });
   
-    if (claimError) {
-      await supabase
-        .from("companies")
-        .update({
-          claimed: false,
-          claimed_by: null,
-        })
-        .eq("id", claim.company_id);
+    const data = await response.json();
   
+    if (!response.ok) {
       showToast(
-        `Impossibile completare l’approvazione: ${claimError.message}`,
+        data.error || "Impossibile completare l'approvazione.",
         "error"
       );
-  
       setProcessingClaimId(null);
       return;
     }
   
     showToast("Richiesta di rivendicazione approvata.");
+  
     await loadClaims();
+  
     setProcessingClaimId(null);
   };
 
   const rejectClaim = async (claim: any) => {
     setProcessingClaimId(claim.id);
   
-    const { error } = await supabase
-      .from("claim_requests")
-      .update({
-        status: "rejected",
-      })
-      .eq("id", claim.id);
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
   
-    if (error) {
-      showToast(error.message, "error");
+    if (!session?.access_token) {
+      showToast("Sessione non valida.", "error");
+      setProcessingClaimId(null);
+      return;
+    }
+  
+    const response = await fetch("/api/admin/claims", {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${session.access_token}`,
+      },
+      body: JSON.stringify({
+        claim_id: claim.id,
+        action: "reject",
+      }),
+    });
+  
+    const data = await response.json();
+  
+    if (!response.ok) {
+      showToast(
+        data.error || "Impossibile rifiutare la richiesta.",
+        "error"
+      );
       setProcessingClaimId(null);
       return;
     }
   
     showToast("Richiesta di rivendicazione rifiutata.");
+  
     await loadClaims();
+  
     setProcessingClaimId(null);
   };
 

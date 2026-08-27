@@ -76,19 +76,39 @@ const resetCompanyForm = () => {
   
     setSaving(true);
   
-    const { error } = await supabase
-      .from("companies")
-      .update({
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    
+    if (!session?.access_token) {
+      showToast("Sessione non valida.", "error");
+      setSaving(false);
+      return;
+    }
+    
+    const response = await fetch("/api/admin/companies", {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${session.access_token}`,
+      },
+      body: JSON.stringify({
+        id: editingCompanyId,
         name: newName.trim(),
         phone: newPhone.trim(),
         city: newCity.trim(),
         category: newCategory.trim(),
         description: newSubcategory.trim(),
-      })
-      .eq("id", editingCompanyId);
-  
-    if (error) {
-      showToast(error.message, "error");
+      }),
+    });
+    
+    const data = await response.json();
+    
+    if (!response.ok) {
+      showToast(
+        data.error || "Impossibile aggiornare l'azienda.",
+        "error"
+      );
       setSaving(false);
       return;
     }
@@ -160,23 +180,39 @@ if (error) {
       return;
     }
   
-    const { error } = await supabase.from("companies").insert({
-      name: newName.trim(),
-      slug,
-      phone: newPhone.trim(),
-      city: newCity.trim(),
-      category: newCategory.trim(),
-      description: newSubcategory.trim(),
-      region: "Friuli Venezia Giulia",
-      province: "TS",
-      average_rating: 0,
-      review_count: 0,
-      verified: false,
-      claimed: false,
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    
+    if (!session?.access_token) {
+      showToast("Sessione non valida.", "error");
+      setSaving(false);
+      return;
+    }
+    
+    const response = await fetch("/api/admin/companies", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${session.access_token}`,
+      },
+      body: JSON.stringify({
+        name: newName.trim(),
+        slug,
+        phone: newPhone.trim(),
+        city: newCity.trim(),
+        category: newCategory.trim(),
+        description: newSubcategory.trim(),
+      }),
     });
-  
-    if (error) {
-      showToast(error.message, "error");
+    
+    const data = await response.json();
+    
+    if (!response.ok) {
+      showToast(
+        data.error || "Impossibile creare l'azienda.",
+        "error"
+      );
       setSaving(false);
       return;
     }

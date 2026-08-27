@@ -37,17 +37,26 @@ export default function FeedbackPage() {
   
     setLoading(true);
   
-    const { error } = await supabase.from("feedback").insert({
-      subject: type,
-      name: name.trim() || null,
-      email: email.trim() || null,
-      message: message.trim(),
-      status: "new",
-      user_type: "guest",
+    const response = await fetch("/api/feedback", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        subject: type,
+        name: name.trim(),
+        email: email.trim(),
+        message: message.trim(),
+      }),
     });
-  
-    if (error) {
-      showToast(error.message, "error");
+    
+    const data = await response.json();
+    
+    if (!response.ok) {
+      showToast(
+        data.error || "Impossibile inviare il feedback.",
+        "error"
+      );
       setLoading(false);
       return;
     }

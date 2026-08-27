@@ -160,30 +160,40 @@ const [toastType, setToastType] = useState<"success" | "error">("success");
       return;
     }
   
-    const { data, error } = await supabase
-      .from("claim_requests")
-      .insert({
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    
+    if (!session?.access_token) {
+      showToast(
+        "Devi effettuare l'accesso per rivendicare un'impresa.",
+        "error"
+      );
+      return;
+    }
+    
+    const response = await fetch("/api/claims", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${session.access_token}`,
+      },
+      body: JSON.stringify({
         company_id: company.id,
-        user_id: user.id,
-        status: "pending",
-      })
-      .select("id, status")
-      .single();
-  
-    if (error) {
-      if (error.code === "23505") {
-        showToast(
-          "Hai già inviato una richiesta per questa azienda.",
-          "error"
-        );
-      } else {
-        showToast(error.message, "error");
-      }
-  
+      }),
+    });
+    
+    const data = await response.json();
+    
+    if (!response.ok) {
+      showToast(
+        data.error || "Impossibile inviare la richiesta di rivendicazione.",
+        "error"
+      );
       return;
     }
   
-    setExistingClaim(data);
+    setExistingClaim(data.claim);
   
     showToast(
       "Richiesta di rivendicazione inviata correttamente. Sarà verificata dal team EdilRate."
@@ -201,17 +211,27 @@ const [toastType, setToastType] = useState<"success" | "error">("success");
       return;
     }
   
-    const { error } = await supabase.from("quote_requests").insert({
-      company_id: company.id,
-      customer_name: quoteName.trim(),
-      customer_email: quoteEmail.trim(),
-      customer_phone: quotePhone.trim(),
-      message: quoteMessage.trim(),
-      status: "pending",
+    const response = await fetch("/api/quotes", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        company_id: company.id,
+        customer_name: quoteName.trim(),
+        customer_email: quoteEmail.trim(),
+        customer_phone: quotePhone.trim(),
+        message: quoteMessage.trim(),
+      }),
     });
-  
-    if (error) {
-      showToast(error.message, "error");
+    
+    const data = await response.json();
+    
+    if (!response.ok) {
+      showToast(
+        data.error || "Impossibile inviare la richiesta di preventivo.",
+        "error"
+      );
       return;
     }
   

@@ -88,13 +88,32 @@ if (error) {
   ) => {
     setProcessingFeedbackId(id);
   
-    const { error } = await supabase
-      .from("feedback")
-      .update({ status })
-      .eq("id", id);
-  
-    if (error) {
-      showToast(error.message, "error");
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    
+    if (!session) {
+      showToast("Sessione non valida. Effettua nuovamente l'accesso.", "error");
+      setProcessingFeedbackId(null);
+      return;
+    }
+    
+    const response = await fetch("/api/admin/feedback/status", {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${session.access_token}`,
+      },
+      body: JSON.stringify({
+        id,
+        status,
+      }),
+    });
+    
+    const result = await response.json();
+    
+    if (!response.ok) {
+      showToast(result.error || "Impossibile aggiornare il feedback.", "error");
       setProcessingFeedbackId(null);
       return;
     }

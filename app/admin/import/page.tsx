@@ -157,12 +157,34 @@ if (error) {
       return;
     }
   
-    const { error } = await supabase
-      .from("companies")
-      .insert(companiesToInsert);
-  
-    if (error) {
-      showToast(error.message, "error");
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    
+    if (!session?.access_token) {
+      showToast("Sessione non valida.", "error");
+      setImporting(false);
+      return;
+    }
+    
+    const response = await fetch("/api/admin/companies/import", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${session.access_token}`,
+      },
+      body: JSON.stringify({
+        companies: companiesToInsert,
+      }),
+    });
+    
+    const data = await response.json();
+    
+    if (!response.ok) {
+      showToast(
+        data.error || "Impossibile importare le aziende.",
+        "error"
+      );
       setImporting(false);
       return;
     }

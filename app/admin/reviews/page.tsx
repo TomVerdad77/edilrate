@@ -102,19 +102,45 @@ const [toastType, setToastType] = useState<
   
     setDeletingReviewId(id);
   
-    const { error } = await supabase
-      .from("reviews")
-      .delete()
-      .eq("id", id);
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
   
-    if (error) {
-      showToast(error.message, "error");
+    if (!session?.access_token) {
+      showToast(
+        "Sessione non valida. Effettua nuovamente l'accesso.",
+        "error"
+      );
+      setDeletingReviewId(null);
+      return;
+    }
+  
+    const response = await fetch("/api/admin/reviews", {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${session.access_token}`,
+      },
+      body: JSON.stringify({
+        id,
+      }),
+    });
+  
+    const result = await response.json();
+  
+    if (!response.ok) {
+      showToast(
+        result.error || "Impossibile eliminare la recensione.",
+        "error"
+      );
       setDeletingReviewId(null);
       return;
     }
   
     showToast("Recensione eliminata correttamente.");
+  
     await loadReviews();
+  
     setDeletingReviewId(null);
   };
 

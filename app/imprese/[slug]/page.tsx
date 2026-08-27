@@ -72,25 +72,62 @@ const [toastType, setToastType] = useState<"success" | "error">("success");
     setCompany(companyData);
   
     const { data: reviewsData, error: reviewsError } = await supabase
-      .from("reviews")
-      .select(`
-        *,
-        profiles (
-          full_name
-        )
-      `)
-      .eq("company_id", companyData.id)
-      .order("created_at", {
-        ascending: false,
-      });
-  
-    if (reviewsError) {
-      showToast(reviewsError.message, "error");
-    }
-  
-    const loadedReviews = reviewsData || [];
-  
-    setReviews(loadedReviews);
+  .from("reviews")
+  .select("*")
+  .eq("company_id", companyData.id)
+  .order("created_at", {
+    ascending: false,
+  });
+
+if (reviewsError) {
+  showToast(reviewsError.message, "error");
+}
+
+const rawReviews = reviewsData || [];
+
+const reviewerIds = [
+  ...new Set(
+    rawReviews
+      .map((review) => review.user_id)
+      .filter(Boolean)
+  ),
+];
+
+let publicProfiles: {
+  id: string;
+  full_name: string | null;
+  avatar_url: string | null;
+}[] = [];
+
+if (reviewerIds.length > 0) {
+  const { data: profileData, error: profilesError } = await supabase
+    .from("public_review_profiles")
+    .select("id, full_name, avatar_url")
+    .in("id", reviewerIds);
+
+  if (profilesError) {
+    showToast(profilesError.message, "error");
+  } else {
+    publicProfiles = profileData || [];
+  }
+}
+
+const loadedReviews = rawReviews.map((review) => {
+  const reviewerProfile = publicProfiles.find(
+    (profile) => profile.id === review.user_id
+  );
+
+  return {
+    ...review,
+    profiles: reviewerProfile
+      ? {
+          full_name: reviewerProfile.full_name,
+        }
+      : null,
+  };
+});
+
+setReviews(loadedReviews);
   
     if (currentUser) {
       const existingUserReview = loadedReviews.find(

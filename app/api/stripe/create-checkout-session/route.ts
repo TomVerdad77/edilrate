@@ -1,14 +1,13 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { stripe } from "@/src/lib/stripe";
+import { supabaseAdmin } from "@/src/lib/supabase-admin";
 
 const priceMap = {
   monthly: process.env.STRIPE_PRICE_MONTHLY,
   semiannual: process.env.STRIPE_PRICE_SEMIANNUAL,
   annual: process.env.STRIPE_PRICE_ANNUAL,
 } as const;
-
-type Plan = keyof typeof priceMap;
 
 export async function POST(request: Request) {
   try {
@@ -41,15 +40,36 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const plan = body.plan as Plan;
-    const priceId = priceMap[plan];
 
-    if (!priceId) {
-      return NextResponse.json(
-        { error: "Piano non valido" },
-        { status: 400 }
-      );
-    }
+const allowedPlans = [
+  "monthly",
+  "semiannual",
+  "annual",
+] as const;
+
+type Plan = (typeof allowedPlans)[number];
+
+const plan =
+  typeof body.plan === "string" &&
+  allowedPlans.includes(body.plan as Plan)
+    ? (body.plan as Plan)
+    : null;
+
+if (!plan) {
+  return NextResponse.json(
+    { error: "Piano non valido" },
+    { status: 400 }
+  );
+}
+
+const priceId = priceMap[plan];
+
+if (!priceId) {
+  return NextResponse.json(
+    { error: "Piano non configurato" },
+    { status: 500 }
+  );
+}
 
     const { data: company, error: companyError } = await supabase
       .from("companies")
@@ -75,6 +95,38 @@ export async function POST(request: Request) {
         { status: 403 }
       );
     }
+
+    const { data: existingSubscription, error: subscriptionError } =
+  await supabaseAdmin
+    .from("subscriptions")
+      .select("status")
+      .eq("company_id", company.id)
+      .maybeSingle();
+  
+  if (subscriptionError) {
+    console.error(
+      "Subscription lookup error:",
+      subscriptionError
+    );
+  
+    return NextResponse.json(
+      { error: "Errore durante il controllo dell'abbonamento" },
+      { status: 500 }
+    );
+  }
+  
+  if (
+    existingSubscription?.status === "active" ||
+    existingSubscription?.status === "trialing"
+  ) {
+    return NextResponse.json(
+      {
+        error:
+          "Hai già un abbonamento EdilRate PRO attivo.",
+      },
+      { status: 409 }
+    );
+  }
 
     const origin = new URL(request.url).origin;
 

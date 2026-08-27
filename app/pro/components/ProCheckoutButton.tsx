@@ -39,7 +39,10 @@ export default function ProCheckoutButton({
       const data = await response.json();
 
       if (!response.ok) {
-        console.error(data);
+        if (response.status !== 409) {
+          console.error("Checkout API error:", data);
+        }
+      
         alert(data.error || "Impossibile avviare il pagamento.");
         return;
       }

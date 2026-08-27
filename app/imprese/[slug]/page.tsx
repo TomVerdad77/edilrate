@@ -85,25 +85,17 @@ if (reviewsError) {
 
 const rawReviews = reviewsData || [];
 
-const reviewerIds = [
-  ...new Set(
-    rawReviews
-      .map((review) => review.user_id)
-      .filter(Boolean)
-  ),
-];
-
 let publicProfiles: {
   id: string;
   full_name: string | null;
   avatar_url: string | null;
 }[] = [];
 
-if (reviewerIds.length > 0) {
-  const { data: profileData, error: profilesError } = await supabase
-    .from("public_review_profiles")
-    .select("id, full_name, avatar_url")
-    .in("id", reviewerIds);
+if (rawReviews.length > 0) {
+  const { data: profileData, error: profilesError } =
+    await supabase.rpc("get_public_review_profiles", {
+      p_company_id: companyData.id,
+    });
 
   if (profilesError) {
     showToast(profilesError.message, "error");

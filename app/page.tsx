@@ -46,20 +46,25 @@ const [popularCategories, setPopularCategories] = useState<
   PopularCategory[]
 >([]);
 
-const loadPopularCategories = async () => {
+const loadPopularCategories = async (retry = true) => {
   const { data, error } = await supabase
     .from("companies")
     .select("category");
 
   if (error) {
+    if (
+      retry &&
+      error.message.toLowerCase().includes("jwt issued at future")
+    ) {
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      return loadPopularCategories(false);
+    }
+
     console.error("Errore caricamento categorie:", error.message);
     return;
   }
 
-  const categoryMap = new Map<
-    string,
-    PopularCategory
-  >();
+  const categoryMap = new Map<string, PopularCategory>();
 
   for (const company of data || []) {
     const category = company.category?.trim();
@@ -67,8 +72,7 @@ const loadPopularCategories = async () => {
     if (!category) continue;
 
     const normalizedCategory = category.toLowerCase();
-    const existingCategory =
-      categoryMap.get(normalizedCategory);
+    const existingCategory = categoryMap.get(normalizedCategory);
 
     if (existingCategory) {
       existingCategory.count += 1;
@@ -80,9 +84,7 @@ const loadPopularCategories = async () => {
     }
   }
 
-  const sortedCategories = Array.from(
-    categoryMap.values()
-  )
+  const sortedCategories = Array.from(categoryMap.values())
     .sort((a, b) => b.count - a.count)
     .slice(0, 6);
 
@@ -95,9 +97,27 @@ const [stats, setStats] = useState({
   cities: 0,
 });
 useEffect(() => {
-  loadFeaturedCompanies();
-  loadStats();
-  loadPopularCategories();
+  let cancelled = false;
+
+  const loadHomeData = async () => {
+    // Aspettiamo che Supabase abbia inizializzato la sessione
+    // dopo eventuali redirect OAuth.
+    await supabase.auth.getSession();
+
+    if (cancelled) return;
+
+    await Promise.all([
+      loadFeaturedCompanies(),
+      loadStats(),
+      loadPopularCategories(),
+    ]);
+  };
+
+  loadHomeData();
+
+  return () => {
+    cancelled = true;
+  };
 }, []);
   
   const loadStats = async () => {

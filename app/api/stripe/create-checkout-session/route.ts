@@ -121,10 +121,11 @@ if (!priceId) {
   ) {
     return NextResponse.json(
       {
-        error:
-          "Hai già un abbonamento EdilRate PRO attivo.",
+        success: false,
+        alreadyActive: true,
+        message: "Hai già un abbonamento EdilRate PRO attivo.",
       },
-      { status: 409 }
+      { status: 200 }
     );
   }
 

@@ -38,14 +38,19 @@ export default function ProCheckoutButton({
 
       const data = await response.json();
 
-      if (!response.ok) {
-        if (response.status !== 409) {
-          console.error("Checkout API error:", data);
-        }
-      
-        alert(data.error || "Impossibile avviare il pagamento.");
+      if (data.alreadyActive) {
+        alert(
+          data.message ||
+            "Hai già un abbonamento EdilRate PRO attivo."
+        );
         return;
       }
+
+      if (!response.ok) {
+  console.error("Checkout API error:", data);
+  alert(data.error || "Impossibile avviare il pagamento.");
+  return;
+}
 
       if (data.url) {
         window.location.href = data.url;

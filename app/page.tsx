@@ -4,6 +4,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { useEffect, useState } from "react";
 import { supabase } from "@/src/lib/supabase";
+import { supabasePublic } from "@/src/lib/supabase-public";
 
 type PopularCategory = {
   name: string;
@@ -47,9 +48,9 @@ const [popularCategories, setPopularCategories] = useState<
 >([]);
 
 const loadPopularCategories = async (retry = true) => {
-  const { data, error } = await supabase
-    .from("companies")
-    .select("category");
+  const { data, error } = await supabasePublic
+  .from("companies")
+  .select("category");
 
   if (error) {
     if (

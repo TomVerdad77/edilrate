@@ -12,6 +12,7 @@ export default function CompanyPage() {
   const [reviews, setReviews] = useState<any[]>([]);
   const [images, setImages] = useState<any[]>([]);
   const [user, setUser] = useState<any>(null);
+  const [isPro, setIsPro] = useState(false);
 
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
@@ -70,6 +71,20 @@ const [toastType, setToastType] = useState<"success" | "error">("success");
     }
   
     setCompany(companyData);
+
+    const { data: proData, error: proError } =
+  await supabase.rpc("is_company_pro", {
+    p_company_id: companyData.id,
+  });
+
+if (proError) {
+  console.error(
+    "Errore controllo stato PRO:",
+    proError
+  );
+} else {
+  setIsPro(Boolean(proData));
+}
   
     const { data: reviewsData, error: reviewsError } = await supabase
   .from("reviews")
@@ -420,6 +435,12 @@ setReviews(loadedReviews);
 {company.claimed && (
   <span className="bg-blue-100 text-blue-700 rounded-full px-4 py-2 text-sm font-medium">
     ✓ Profilo rivendicato
+  </span>
+)}
+
+{isPro && (
+  <span className="bg-amber-100 text-amber-800 rounded-full px-4 py-2 text-sm font-semibold">
+    ⭐ EdilRate PRO
   </span>
 )}
 

@@ -14,9 +14,13 @@ const geistMono = Geist_Mono({
 
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://edilrate.vercel.app"),
+  metadataBase: new URL("https://edilrate.it"),
 
   applicationName: "EdilRate",
+
+  alternates: {
+    canonical: "/",
+  },
 
   title: {
     default: "EdilRate | Recensioni e preventivi per imprese edili",

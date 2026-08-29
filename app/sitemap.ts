@@ -4,7 +4,7 @@ import { supabase } from "@/src/lib/supabase";
 export const revalidate = 86400;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = "https://edilrate.vercel.app";
+  const baseUrl = "https://edilrate.it";
 
   const staticPages: MetadataRoute.Sitemap = [
     {

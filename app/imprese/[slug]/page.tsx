@@ -119,6 +119,35 @@ if (rawReviews.length > 0) {
   }
 }
 
+let publicReplies: {
+  id: string;
+  review_id: string;
+  content: string;
+  created_at: string;
+  updated_at: string;
+}[] = [];
+
+if (rawReviews.length > 0) {
+  const reviewIds = rawReviews.map((review) => review.id);
+
+  const { data: repliesData, error: repliesError } =
+    await supabase
+      .from("review_replies")
+      .select(
+        "id, review_id, content, created_at, updated_at"
+      )
+      .in("review_id", reviewIds);
+
+  if (repliesError) {
+    console.error(
+      "Errore caricamento risposte pubbliche:",
+      repliesError
+    );
+  } else {
+    publicReplies = repliesData || [];
+  }
+}
+
 const loadedReviews = rawReviews.map((review) => {
   const reviewerProfile = publicProfiles.find(
     (profile) => profile.id === review.user_id
@@ -131,6 +160,10 @@ const loadedReviews = rawReviews.map((review) => {
           full_name: reviewerProfile.full_name,
         }
       : null,
+    reply:
+      publicReplies.find(
+        (reply) => reply.review_id === review.id
+      ) || null,
   };
 });
 
@@ -942,7 +975,7 @@ setReviews(loadedReviews);
         </div>
 
         {/* REVIEWS */}
-        <div className="mt-12">
+        <div id="recensioni" className="mt-12 scroll-mt-24">
   <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
     <div>
       <p className="text-sm font-medium text-gray-500">
@@ -983,7 +1016,24 @@ setReviews(loadedReviews);
                     <p className="mt-3 text-gray-700 leading-7">
                       “{review.content}”
                     </p>
-              
+                    {review.reply && (
+  <div className="mt-5 rounded-2xl bg-gray-50 p-5">
+    <p className="text-sm font-semibold text-black">
+      Risposta dell'impresa
+    </p>
+
+    <p className="mt-2 text-sm leading-6 text-gray-700">
+      {review.reply.content}
+    </p>
+
+    <p className="mt-3 text-xs text-gray-400">
+      {new Date(
+        review.reply.updated_at ||
+          review.reply.created_at
+      ).toLocaleDateString("it-IT")}
+    </p>
+  </div>
+)}
                     <div className="mt-5 flex flex-wrap items-center gap-3 text-sm text-gray-500">
                       <span>
                         👤 {review.profiles?.full_name || "Utente EdilRate"}

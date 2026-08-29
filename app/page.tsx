@@ -166,10 +166,25 @@ useEffect(() => {
   created_at
 )
 `)
-  .order("claimed", { ascending: false })
-  .order("average_rating", { ascending: false })
-  .order("review_count", { ascending: false })
-  .limit(3);
+.order("claimed", { ascending: false })
+.order("average_rating", { ascending: false })
+.order("review_count", { ascending: false });
+
+const { data: proCompaniesData, error: proCompaniesError } =
+  await supabase.rpc("get_pro_company_ids");
+
+if (proCompaniesError) {
+  console.error(
+    "Errore caricamento aziende PRO in home:",
+    proCompaniesError.message
+  );
+}
+
+const proIds = new Set(
+  (proCompaniesData || []).map(
+    (item: { company_id: string }) => item.company_id
+  )
+);
 
     const { count: companiesCount } = await supabase
     .from("companies")
@@ -216,14 +231,31 @@ useEffect(() => {
       ratingsByCompany.set(review.company_id, existing);
     }
 
-    setFeaturedCompanies(
-      companies.map((company) => ({
-        ...company,
-        ratingDistribution: getRatingDistribution(
-          ratingsByCompany.get(company.id) || []
-        ),
-      }))
-    );
+    const featured = companies
+  .map((company) => ({
+    ...company,
+    is_pro: proIds.has(company.id),
+    ratingDistribution: getRatingDistribution(
+      ratingsByCompany.get(company.id) || []
+    ),
+  }))
+  .sort((a, b) => {
+    if (a.is_pro !== b.is_pro) {
+      return a.is_pro ? -1 : 1;
+    }
+
+    const ratingDifference =
+      (b.average_rating || 0) - (a.average_rating || 0);
+
+    if (ratingDifference !== 0) {
+      return ratingDifference;
+    }
+
+    return (b.review_count || 0) - (a.review_count || 0);
+  })
+  .slice(0, 3);
+
+setFeaturedCompanies(featured);
   };
 
   const handleSearch = () => {
@@ -478,10 +510,16 @@ company.company_images?.[0]?.image_url ? (
           {company.name}
         </h3>
 
-        <div className="mt-3">
+        <div className="mt-3 flex flex-wrap items-center gap-2">
   <span className="inline-flex bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-xs font-medium">
     {company.category || "Categoria non indicata"}
   </span>
+
+  {company.is_pro && (
+    <span className="inline-flex rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-800">
+      ⭐ EdilRate PRO
+    </span>
+  )}
 </div>
 
         <p className="mt-1 text-sm text-gray-500">

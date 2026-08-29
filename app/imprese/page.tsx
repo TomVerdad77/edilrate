@@ -19,6 +19,7 @@ type Company = {
   review_count: number | null;
   verified: boolean;
   cover_image_url?: string | null;
+  is_pro?: boolean;
 };
 
 export default function CompaniesPage() {
@@ -36,18 +37,18 @@ export default function CompaniesPage() {
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-  
+
     const initialSearch = params.get("search");
     const initialCategory = params.get("category");
-  
+
     if (initialSearch) {
       setSearch(initialSearch);
     }
-  
+
     if (initialCategory) {
       setCategory(initialCategory);
     }
-  
+
     loadCompanies();
   }, []);
 
@@ -57,7 +58,7 @@ export default function CompaniesPage() {
   ) => {
     setToastType(type);
     setToastMessage(message);
-  
+
     window.setTimeout(() => {
       setToastMessage("");
     }, 3000);
@@ -65,52 +66,69 @@ export default function CompaniesPage() {
 
   const loadCompanies = async () => {
     setLoading(true);
-  
+
     const { data: companiesData, error: companiesError } = await supabase
       .from("companies")
       .select(
         "id, name, slug, category, city, province, description, average_rating, review_count, verified"
       )
       .order("created_at", { ascending: false });
-  
+
     if (companiesError) {
       showToast(companiesError.message, "error");
       setLoading(false);
       return;
     }
-  
+
     const companyIds = (companiesData || []).map((company) => company.id);
-  
+
     let coverImages: {
       company_id: string;
       image_url: string;
     }[] = [];
-  
+
     if (companyIds.length > 0) {
       const { data: coverData, error: coverError } = await supabase
         .from("company_images")
         .select("company_id, image_url")
         .in("company_id", companyIds)
         .eq("is_cover", true);
-  
+
       if (coverError) {
         showToast(coverError.message, "error");
       } else {
         coverImages = coverData || [];
       }
     }
-  
-    const companiesWithCover = (companiesData || []).map((company) => {
-      const cover = coverImages.find(
-        (image) => image.company_id === company.id
-      );
-  
-      return {
-        ...company,
-        cover_image_url: cover?.image_url || null,
-      };
-    });
-  
+
+    const { data: proCompaniesData, error: proCompaniesError } =
+    await supabase.rpc("get_pro_company_ids");
+
+  if (proCompaniesError) {
+    console.error(
+      "Errore caricamento aziende PRO:",
+      proCompaniesError.message
+    );
+  }
+
+  const proIds = new Set(
+    (proCompaniesData || []).map(
+      (item: { company_id: string }) => item.company_id
+    )
+  );
+
+  const companiesWithCover = (companiesData || []).map((company) => {
+    const cover = coverImages.find(
+      (image) => image.company_id === company.id
+    );
+
+    return {
+      ...company,
+      cover_image_url: cover?.image_url || null,
+      is_pro: proIds.has(company.id),
+    };
+  });
+
     setCompanies(companiesWithCover);
     setLoading(false);
   };
@@ -136,23 +154,27 @@ export default function CompaniesPage() {
   });
 
   const sortedCompanies = [...filteredCompanies].sort((a, b) => {
+    if (a.is_pro !== b.is_pro) {
+      return a.is_pro ? -1 : 1;
+    }
+
     if (sortBy === "rating") {
       const ratingDifference =
         (b.average_rating || 0) - (a.average_rating || 0);
-  
+
       if (ratingDifference !== 0) {
         return ratingDifference;
       }
-  
+
       return (b.review_count || 0) - (a.review_count || 0);
     }
-  
+
     if (sortBy === "name") {
       return a.name.localeCompare(b.name, "it", {
         sensitivity: "base",
       });
     }
-  
+
     return (b.review_count || 0) - (a.review_count || 0);
   });
 
@@ -454,6 +476,12 @@ const availableCities = Array.from(
                         ✓ Impresa verificata
                       </span>
                     )}
+
+{company.is_pro && (
+  <span className="rounded-full bg-amber-100 px-3 py-1.5 text-xs font-semibold text-amber-800">
+    ⭐ EdilRate PRO
+  </span>
+)}
                   </div>
 
                   <h2 className="mt-4 text-2xl font-semibold tracking-tight text-black md:text-3xl">

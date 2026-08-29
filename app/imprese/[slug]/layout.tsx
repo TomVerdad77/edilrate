@@ -141,7 +141,7 @@ export default async function CompanyLayout({
       .eq("slug", slug)
       .maybeSingle();
   
-    const baseUrl = "https://edilrate.vercel.app";
+    const baseUrl = "https://edilrate.it";
   
     const companyUrl = company?.slug
       ? `${baseUrl}/imprese/${encodeURIComponent(company.slug)}`

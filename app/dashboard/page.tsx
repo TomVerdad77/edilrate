@@ -7,12 +7,17 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/src/lib/supabase";
 import Toast from "@/components/ui/Toast";
 import ManageSubscriptionButton from "./components/ManageSubscriptionButton";
+import QRCode from "qrcode";
 
 export default function DashboardPage() {
   const [user, setUser] = useState<any>(null);
   const [company, setCompany] = useState<any>(null);
   const [subscription, setSubscription] = useState<any>(null);
   const [quotes, setQuotes] = useState<any[]>([]);
+  const [reviews, setReviews] = useState<any[]>([]);
+  const [reviewQrCode, setReviewQrCode] = useState<string>("");
+  const [replyDrafts, setReplyDrafts] = useState<Record<string, string>>({});
+  const [savingReplyId, setSavingReplyId] = useState<string | null>(null);
   const [images, setImages] = useState<any[]>([]);
   const [uploading, setUploading] = useState(false);
   const [description, setDescription] = useState("");
@@ -25,6 +30,32 @@ const [serviceAreas, setServiceAreas] = useState("");
 const [toastMessage, setToastMessage] = useState("");
 const [toastType, setToastType] = useState<"success" | "error">("success");
 
+useEffect(() => {
+  if (!company?.slug) {
+    setReviewQrCode("");
+    return;
+  }
+
+  const generateQrCode = async () => {
+    try {
+      const reviewUrl = `https://edilrate.it/imprese/${company.slug}#recensioni`;
+
+      const qrDataUrl = await QRCode.toDataURL(reviewUrl, {
+        width: 600,
+        margin: 2,
+        errorCorrectionLevel: "H",
+      });
+
+      setReviewQrCode(qrDataUrl);
+    } catch (error) {
+      console.error("Errore generazione QR code:", error);
+      setReviewQrCode("");
+    }
+  };
+
+  generateQrCode();
+}, [company?.slug]);
+
   useEffect(() => {
     loadDashboard();
   }, []);
@@ -35,7 +66,7 @@ const [toastType, setToastType] = useState<"success" | "error">("success");
   ) => {
     setToastType(type);
     setToastMessage(message);
-  
+
     window.setTimeout(() => {
       setToastMessage("");
     }, 3000);
@@ -49,20 +80,20 @@ const [toastType, setToastType] = useState<"success" | "error">("success");
       .from("quote_requests")
       .update({ status })
       .eq("id", quoteId);
-  
+
     if (error) {
       showToast(error.message, "error");
       return;
     }
-  
+
     if (status === "contacted") {
       showToast("La richiesta è stata segnata come contattata.");
     }
-  
+
     if (status === "closed") {
       showToast("La richiesta è stata chiusa correttamente.");
     }
-  
+
     await loadDashboard();
   };
 
@@ -98,7 +129,7 @@ const [toastType, setToastType] = useState<"success" | "error">("success");
         await supabase.storage
           .from("company-images")
           .remove([filePath]);
-      
+
         showToast(dbError.message, "error");
         setUploading(false);
         return;
@@ -111,12 +142,12 @@ const [toastType, setToastType] = useState<"success" | "error">("success");
   const deleteImage = async (image: any) => {
     const confirmDelete = window.confirm("Vuoi eliminare questa immagine?");
     if (!confirmDelete) return;
-  
+
     if (image.storage_path) {
       const { error: storageError } = await supabase.storage
         .from("company-images")
         .remove([image.storage_path]);
-  
+
         if (storageError) {
           showToast(
             `Impossibile eliminare il file dallo storage: ${storageError.message}`,
@@ -125,47 +156,47 @@ const [toastType, setToastType] = useState<"success" | "error">("success");
           return;
         }
     }
-  
+
     const { error: dbError } = await supabase
       .from("company_images")
       .delete()
       .eq("id", image.id);
-  
+
       if (dbError) {
         showToast(dbError.message, "error");
         return;
       }
-      
+
       showToast("Immagine eliminata correttamente.");
       await loadDashboard();
   };
 
   const setCoverImage = async (imageId: string) => {
     if (!company) return;
-  
+
     const { error: resetError } = await supabase
       .from("company_images")
       .update({ is_cover: false })
       .eq("company_id", company.id);
-  
+
       if (resetError) {
         showToast(resetError.message, "error");
         return;
       }
-  
+
     const { error: coverError } = await supabase
       .from("company_images")
       .update({ is_cover: true })
       .eq("id", imageId);
-  
+
       if (coverError) {
         showToast(coverError.message, "error");
         return;
       }
-      
+
       showToast("Foto di copertina aggiornata correttamente.");
       await loadDashboard();
-  
+
   };
 
   const loadDashboard = async () => {
@@ -190,19 +221,19 @@ if (!user) {
         window.location.replace("/");
         return;
       }
-      
+
       setCompany(companyData);
-    
+
       const { data: subscriptionData, error: subscriptionError } = await supabase
       .from("subscriptions")
       .select("*")
       .eq("company_id", companyData.id)
       .maybeSingle();
-    
+
     if (subscriptionError) {
       console.error("Errore caricamento abbonamento:", subscriptionError);
     }
-    
+
     setSubscription(subscriptionData || null);
 
     setDescription(companyData.description || "");
@@ -228,6 +259,128 @@ if (!user) {
   .order("created_at", { ascending: false });
 
 setImages(imageData || []);
+const { data: reviewsData, error: reviewsError } = await supabase
+  .from("reviews")
+  .select("*")
+  .eq("company_id", companyData.id)
+  .order("created_at", { ascending: false });
+
+if (reviewsError) {
+  console.error(
+    "Errore caricamento recensioni:",
+    reviewsError
+  );
+  setReviews([]);
+} else {
+  const loadedReviews = reviewsData || [];
+
+  if (loadedReviews.length === 0) {
+    setReviews([]);
+  } else {
+    const reviewIds = loadedReviews.map(
+      (review) => review.id
+    );
+
+    const { data: repliesData, error: repliesError } =
+      await supabase
+        .from("review_replies")
+        .select(
+          "id, review_id, content, created_at, updated_at"
+        )
+        .in("review_id", reviewIds);
+
+    if (repliesError) {
+      console.error(
+        "Errore caricamento risposte:",
+        repliesError
+      );
+    }
+
+    const repliesByReview = new Map(
+      (repliesData || []).map((reply) => [
+        reply.review_id,
+        reply,
+      ])
+    );
+
+    setReviews(
+      loadedReviews.map((review) => ({
+        ...review,
+        reply: repliesByReview.get(review.id) || null,
+      }))
+    );
+  }
+}
+    }
+  };
+
+  const saveReviewReply = async (reviewId: string) => {
+    const content = (replyDrafts[reviewId] || "").trim();
+
+    if (!content) {
+      showToast("Scrivi una risposta prima di salvarla.", "error");
+      return;
+    }
+
+    if (content.length < 2 || content.length > 2000) {
+      showToast(
+        "La risposta deve contenere tra 2 e 2000 caratteri.",
+        "error"
+      );
+      return;
+    }
+
+    setSavingReplyId(reviewId);
+
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (!session?.access_token) {
+        showToast("Sessione non valida. Accedi di nuovo.", "error");
+        return;
+      }
+
+      const response = await fetch("/api/review-replies", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({
+          review_id: reviewId,
+          content,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        showToast(
+          data.error || "Impossibile salvare la risposta.",
+          "error"
+        );
+        return;
+      }
+
+      showToast("Risposta salvata correttamente.");
+
+      setReplyDrafts((current) => ({
+        ...current,
+        [reviewId]: "",
+      }));
+
+      await loadDashboard();
+    } catch (error) {
+      console.error("Errore salvataggio risposta:", error);
+
+      showToast(
+        "Si è verificato un errore durante il salvataggio.",
+        "error"
+      );
+    } finally {
+      setSavingReplyId(null);
     }
   };
 
@@ -273,21 +426,21 @@ setImages(imageData || []);
             🟡 Da contattare
           </span>
         );
-  
+
       case "contacted":
         return (
           <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
             🟢 Contattata
           </span>
         );
-  
+
       case "closed":
         return (
           <span className="bg-gray-200 text-gray-700 px-3 py-1 rounded-full text-sm font-medium">
             ⚫ Chiusa
           </span>
         );
-  
+
       default:
         return (
           <span className="border px-3 py-1 rounded-full text-sm">
@@ -300,6 +453,15 @@ setImages(imageData || []);
   const isPro =
   subscription?.status === "active" ||
   subscription?.status === "trialing";
+
+  const repliedReviews = reviews.filter(
+    (review) => review.reply
+  ).length;
+
+  const reviewResponseRate =
+    reviews.length > 0
+      ? Math.round((repliedReviews / reviews.length) * 100)
+      : 0;
 
   if (!user) {
     return (
@@ -539,14 +701,306 @@ setImages(imageData || []);
 </div>
 
 </div>
+
+{isPro && (
+  <div className="mt-10">
+    <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+      <div>
+        <div className="flex flex-wrap items-center gap-3">
+          <h2 className="text-2xl font-semibold text-black">
+            Statistiche PRO
+          </h2>
+
+          <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-800">
+            ⭐ PRO
+          </span>
+        </div>
+
+        <p className="mt-2 text-sm text-gray-600">
+          Monitora come stai gestendo la reputazione e i contatti della tua impresa.
+        </p>
+      </div>
+    </div>
+
+    <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="rounded-3xl border bg-white p-5 shadow-sm md:p-6">
+        <div className="text-3xl">💬</div>
+
+        <p className="mt-4 text-sm text-gray-500">
+          Recensioni ricevute
+        </p>
+
+        <p className="mt-2 text-3xl font-bold">
+          {reviews.length}
+        </p>
+      </div>
+
+      <div className="rounded-3xl border bg-white p-5 shadow-sm md:p-6">
+        <div className="text-3xl">↩️</div>
+
+        <p className="mt-4 text-sm text-gray-500">
+          Risposte pubblicate
+        </p>
+
+        <p className="mt-2 text-3xl font-bold">
+          {repliedReviews}
+        </p>
+      </div>
+
+      <div className="rounded-3xl border bg-white p-5 shadow-sm md:p-6">
+        <div className="text-3xl">📈</div>
+
+        <p className="mt-4 text-sm text-gray-500">
+          Tasso di risposta
+        </p>
+
+        <p className="mt-2 text-3xl font-bold">
+          {reviewResponseRate}%
+        </p>
+
+        <p className="mt-2 text-xs text-gray-500">
+          Recensioni a cui hai risposto
+        </p>
+      </div>
+
+      <div className="rounded-3xl border bg-white p-5 shadow-sm md:p-6">
+        <div className="text-3xl">🤝</div>
+
+        <p className="mt-4 text-sm text-gray-500">
+          Preventivi gestiti
+        </p>
+
+        <p className="mt-2 text-3xl font-bold">
+          {
+            quotes.filter(
+              (quote) =>
+                quote.status === "contacted" ||
+                quote.status === "closed"
+            ).length
+          }
+        </p>
+
+        <p className="mt-2 text-xs text-gray-500">
+          Contattati o chiusi
+        </p>
+      </div>
+    </div>
+  </div>
+)}
+
+{isPro && (
+  <div className="mt-10 rounded-3xl border bg-white p-6 shadow-sm md:p-8">
+    <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+      <div className="max-w-xl">
+        <div className="flex flex-wrap items-center gap-3">
+          <h2 className="text-2xl font-semibold text-black">
+            QR recensioni
+          </h2>
+
+          <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-800">
+            ⭐ PRO
+          </span>
+        </div>
+
+        <p className="mt-3 leading-7 text-gray-600">
+          Fai scansionare questo QR code ai tuoi clienti per portarli
+          direttamente alla pagina della tua impresa e raccogliere nuove
+          recensioni su EdilRate.
+        </p>
+
+        <p className="mt-4 break-all text-sm text-gray-500">
+          https://edilrate.it/imprese/{company.slug}#recensioni
+        </p>
+
+        {reviewQrCode && (
+          <a
+            href={reviewQrCode}
+            download={`edilrate-qr-recensioni-${company.slug}.png`}
+            className="mt-6 inline-flex min-h-[44px] items-center justify-center rounded-2xl bg-black px-5 py-3 text-sm font-medium text-white transition hover:bg-gray-800"
+          >
+            Scarica QR code
+          </a>
+        )}
+      </div>
+
+      <div className="flex shrink-0 justify-center md:justify-end">
+        {reviewQrCode ? (
+          <div className="rounded-3xl border bg-white p-4 shadow-sm">
+            <img
+              src={reviewQrCode}
+              alt={`QR code recensioni ${company.name}`}
+              className="h-48 w-48 sm:h-52 sm:w-52"
+            />
+          </div>
+        ) : (
+          <div className="flex h-52 w-52 items-center justify-center rounded-3xl border bg-gray-50">
+            <span className="text-sm text-gray-400">
+              Generazione QR...
+            </span>
+          </div>
+        )}
+      </div>
+    </div>
+  </div>
+)}
+
 <div
   id="modifica-profilo"
   className="mt-10 scroll-mt-24 rounded-3xl border bg-white p-6 shadow-sm md:p-8"
 >
   <div>
-    <p className="text-sm font-medium text-gray-500">
-      Profilo pubblico
-    </p>
+
+  <div className="mt-10">
+  <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+    <div>
+      <p className="text-sm font-medium text-gray-500">
+        Reputazione
+      </p>
+
+      <h2 className="mt-1 text-2xl font-semibold">
+        Recensioni ricevute
+      </h2>
+
+      <p className="mt-2 text-sm text-gray-600">
+        Consulta le recensioni pubblicate dagli utenti sulla tua impresa.
+      </p>
+    </div>
+
+    <span className="self-start rounded-full bg-gray-100 px-4 py-2 text-sm font-medium text-gray-600 sm:self-auto">
+      {reviews.length}{" "}
+      {reviews.length === 1 ? "recensione" : "recensioni"}
+    </span>
+  </div>
+
+  <div className="mt-6 space-y-4">
+    {reviews.length > 0 ? (
+      reviews.map((review) => (
+        <div
+          key={review.id}
+          className="rounded-3xl border bg-white p-6 shadow-sm md:p-7"
+        >
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <div className="text-lg text-yellow-400">
+                {"★".repeat(review.rating)}
+                <span className="text-gray-300">
+                  {"★".repeat(5 - review.rating)}
+                </span>
+              </div>
+
+              <h3 className="mt-3 text-lg font-semibold text-black">
+                {review.title}
+              </h3>
+
+              <p className="mt-2 leading-7 text-gray-700">
+                “{review.content}”
+              </p>
+            </div>
+
+            <span className="shrink-0 text-sm text-gray-500">
+              {new Date(review.created_at).toLocaleDateString(
+                "it-IT"
+              )}
+            </span>
+          </div>
+
+          {review.reply && (
+            <div className="mt-6 rounded-2xl bg-gray-50 p-5">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="font-semibold text-black">
+                  Risposta dell'impresa
+                </span>
+
+                {isPro && (
+                  <span className="rounded-full bg-amber-100 px-2.5 py-1 text-xs font-semibold text-amber-800">
+                    ⭐ PRO
+                  </span>
+                )}
+              </div>
+
+              <p className="mt-3 text-sm leading-6 text-gray-700">
+                {review.reply.content}
+              </p>
+
+              <p className="mt-3 text-xs text-gray-400">
+                {new Date(
+                  review.reply.updated_at ||
+                    review.reply.created_at
+                ).toLocaleDateString("it-IT")}
+              </p>
+            </div>
+          )}
+
+{isPro && (
+  <div className="mt-6 border-t pt-5">
+    <label
+      htmlFor={`reply-${review.id}`}
+      className="text-sm font-medium text-black"
+    >
+      {review.reply
+        ? "Modifica la risposta"
+        : "Rispondi alla recensione"}
+    </label>
+
+    <textarea
+      id={`reply-${review.id}`}
+      value={
+        replyDrafts[review.id] ??
+        review.reply?.content ??
+        ""
+      }
+      onChange={(e) =>
+        setReplyDrafts((current) => ({
+          ...current,
+          [review.id]: e.target.value,
+        }))
+      }
+      placeholder="Scrivi una risposta pubblica alla recensione..."
+      maxLength={2000}
+      className="mt-3 min-h-[120px] w-full resize-y rounded-2xl border px-4 py-3 outline-none transition focus:border-black focus:ring-2 focus:ring-black/5"
+    />
+
+    <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <p className="text-xs text-gray-500">
+        La risposta sarà visibile pubblicamente nel profilo della tua impresa.
+      </p>
+
+      <button
+        type="button"
+        onClick={() => saveReviewReply(review.id)}
+        disabled={savingReplyId === review.id}
+        className="inline-flex min-h-[44px] items-center justify-center rounded-2xl bg-black px-5 py-3 text-sm font-medium text-white transition hover:bg-gray-800 disabled:cursor-not-allowed disabled:bg-gray-300"
+      >
+        {savingReplyId === review.id
+          ? "Salvataggio..."
+          : review.reply
+          ? "Aggiorna risposta"
+          : "Pubblica risposta"}
+      </button>
+    </div>
+  </div>
+)}
+        </div>
+      ))
+    ) : (
+      <div className="rounded-3xl border bg-white px-6 py-12 text-center shadow-sm">
+        <div className="text-4xl">⭐</div>
+
+        <h3 className="mt-4 text-lg font-semibold">
+          Nessuna recensione ricevuta
+        </h3>
+
+        <p className="mt-2 text-sm text-gray-500">
+          Le nuove recensioni pubblicate dagli utenti compariranno qui.
+        </p>
+      </div>
+    )}
+  </div>
+</div>
+
+<p className="mt-6 text-sm font-medium text-gray-500">
+  Profilo pubblico
+</p>
 
     <h2 className="mt-1 text-2xl font-semibold">
       Modifica profilo azienda

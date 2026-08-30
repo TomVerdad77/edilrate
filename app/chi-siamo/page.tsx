@@ -4,6 +4,9 @@ export const metadata: Metadata = {
   title: "Chi siamo",
   description:
     "Scopri la missione di EdilRate e il nostro obiettivo: rendere più semplice scegliere un'impresa edile affidabile.",
+  alternates: {
+    canonical: "/chi-siamo",
+  },
 };
 
 import Navbar from "@/components/Navbar";

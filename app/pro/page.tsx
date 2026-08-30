@@ -1,10 +1,22 @@
 import ProCheckoutButton from "./components/ProCheckoutButton";
 
 export const metadata = {
+  title: "EdilRate PRO | Più visibilità per la tua impresa",
+
+  description:
+    "Scopri EdilRate PRO: più visibilità, gestione della reputazione, statistiche e strumenti professionali pensati per le imprese edili.",
+
+  alternates: {
+    canonical: "/pro",
+  },
+
+  openGraph: {
     title: "EdilRate PRO | Più visibilità per la tua impresa",
     description:
       "Scopri EdilRate PRO: più visibilità, gestione della reputazione, statistiche e strumenti professionali pensati per le imprese edili.",
-  };
+    url: "/pro",
+  },
+};
   
   const benefits = [
     {
@@ -382,10 +394,32 @@ export const metadata = {
               ))}
             </div>
   
-            <p className="mx-auto mt-8 max-w-3xl text-center text-sm leading-6 text-gray-500">
-              I pagamenti verranno attivati al lancio ufficiale. Le condizioni
-              definitive saranno mostrate prima della conferma dell’acquisto.
-            </p>
+            <div className="mx-auto mt-8 max-w-3xl text-center text-sm leading-6 text-gray-500">
+  <p>
+    Gli abbonamenti EdilRate PRO si rinnovano automaticamente secondo la
+    periodicità scelta fino alla cancellazione. Puoi annullare
+    l&apos;abbonamento in qualsiasi momento dalla tua area personale; le
+    funzionalità PRO rimarranno attive fino alla fine del periodo già pagato.
+  </p>
+
+  <p className="mt-3">
+    Procedendo all&apos;acquisto accetti i{" "}
+    <a
+      href="/termini"
+      className="font-medium text-gray-700 underline underline-offset-4 hover:text-black"
+    >
+      Termini e condizioni
+    </a>{" "}
+    e dichiari di aver preso visione della{" "}
+    <a
+      href="/privacy"
+      className="font-medium text-gray-700 underline underline-offset-4 hover:text-black"
+    >
+      Privacy Policy
+    </a>
+    .
+  </p>
+</div>
           </div>
         </section>
   

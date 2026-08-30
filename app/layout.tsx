@@ -18,10 +18,6 @@ export const metadata: Metadata = {
 
   applicationName: "EdilRate",
 
-  alternates: {
-    canonical: "/",
-  },
-
   title: {
     default: "EdilRate | Recensioni e preventivi per imprese edili",
     template: "%s | EdilRate",

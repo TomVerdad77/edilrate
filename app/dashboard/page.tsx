@@ -533,6 +533,28 @@ if (reviewsError) {
         le richieste di preventivo ricevute.
       </p>
 
+      {!isPro && (
+  <div className="mt-6 flex flex-col gap-4 rounded-2xl border border-amber-200 bg-amber-50 p-5 sm:flex-row sm:items-center sm:justify-between">
+    <div>
+      <p className="font-semibold text-gray-900">
+        Vuoi più visibilità per la tua impresa?
+      </p>
+
+      <p className="mt-1 text-sm leading-6 text-gray-600">
+        Con EdilRate PRO ottieni maggiore visibilità, puoi rispondere alle
+        recensioni e accedere agli strumenti dedicati alle imprese.
+      </p>
+    </div>
+
+    <Button
+      href="/pro"
+      className="w-full shrink-0 sm:w-auto"
+    >
+      Scopri EdilRate PRO
+    </Button>
+  </div>
+)}
+
       <div className="mt-7 flex flex-wrap items-center gap-x-6 gap-y-4">
         <div>
           <p className="text-xs font-medium uppercase tracking-wide text-gray-500">
@@ -588,7 +610,7 @@ if (reviewsError) {
       </div>
     </div>
 
-    <div className="flex w-full flex-col gap-3 sm:w-auto lg:min-w-[210px]">
+    <div className="flex w-full flex-col gap-3 sm:w-auto lg:min-w-[210px] lg:translate-y-16">
       <a
         href={`/imprese/${company.slug}`}
         className="inline-flex items-center justify-center rounded-2xl bg-black px-5 py-3 text-sm font-medium text-white transition hover:bg-gray-800"
@@ -871,6 +893,29 @@ if (reviewsError) {
       {reviews.length === 1 ? "recensione" : "recensioni"}
     </span>
   </div>
+
+  {!isPro && reviews.length > 0 && (
+  <div className="mt-6 flex flex-col gap-4 rounded-2xl border border-amber-200 bg-amber-50 p-5 sm:flex-row sm:items-center sm:justify-between">
+    <div>
+      <p className="font-semibold text-gray-900">
+        Vuoi rispondere alle recensioni?
+      </p>
+
+      <p className="mt-1 text-sm leading-6 text-gray-600">
+        Con EdilRate PRO puoi pubblicare risposte ufficiali alle recensioni
+        ricevute e gestire meglio la reputazione della tua impresa.
+      </p>
+    </div>
+
+    <Button
+      href="/pro"
+      variant="secondary"
+      className="w-full shrink-0 sm:w-auto"
+    >
+      Passa a PRO
+    </Button>
+  </div>
+)}
 
   <div className="mt-6 space-y-4">
     {reviews.length > 0 ? (

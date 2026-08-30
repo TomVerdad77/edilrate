@@ -976,7 +976,9 @@ setReviews(loadedReviews);
   </div>
 
   <Button
-    href="/auth/login"
+    href={`/auth/login?next=${encodeURIComponent(
+      `/imprese/${company.slug}#recensioni`
+    )}`}
     variant="secondary"
     className="w-full sm:w-auto"
   >
@@ -1078,7 +1080,9 @@ setReviews(loadedReviews);
             
               {!user && (
                 <Button
-                  href="/auth/login"
+                href={`/auth/login?next=${encodeURIComponent(
+                  `/imprese/${company.slug}#recensioni`
+                )}`}
                   variant="secondary"
                   className="mt-6"
                 >

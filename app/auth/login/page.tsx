@@ -25,20 +25,42 @@ export default function LoginPage() {
     }, 3000);
   };
 
+  const getNextUrl = () => {
+    const params = new URLSearchParams(window.location.search);
+    const next = params.get("next");
+
+    // Accettiamo solo percorsi interni per evitare open redirect.
+    if (!next || !next.startsWith("/") || next.startsWith("//")) {
+      return "/";
+    }
+
+    return next;
+  };
+
+  const getOAuthRedirectUrl = () => {
+    const next = getNextUrl();
+
+    if (next === "/") {
+      return window.location.origin;
+    }
+
+    return `${window.location.origin}${next}`;
+  };
+
   const loginWithGoogle = async () => {
     await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: window.location.origin,
+        redirectTo: getOAuthRedirectUrl(),
       },
     });
   };
-  
+
   const loginWithFacebook = async () => {
     await supabase.auth.signInWithOAuth({
       provider: "facebook",
       options: {
-        redirectTo: window.location.origin,
+        redirectTo: getOAuthRedirectUrl(),
       },
     });
   };
@@ -48,14 +70,14 @@ export default function LoginPage() {
       showToast("Inserisci email e password.", "error");
       return;
     }
-  
+
     setLoading(true);
-  
+
     const { error } = await supabase.auth.signInWithPassword({
       email: email.trim(),
       password,
     });
-  
+
     if (error) {
       showToast(
         error.message === "Invalid login credentials"
@@ -63,12 +85,12 @@ export default function LoginPage() {
           : error.message,
         "error"
       );
-  
+
       setLoading(false);
       return;
     }
-  
-    window.location.href = "/";
+
+    window.location.href = getNextUrl();
   };
 
   return (

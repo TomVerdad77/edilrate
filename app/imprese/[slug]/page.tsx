@@ -864,6 +864,18 @@ setReviews(loadedReviews);
           className="h-36 w-full resize-y rounded-2xl border px-4 py-3 outline-none transition focus:border-black focus:ring-2 focus:ring-black/5"
         />
 
+<p className="mt-4 text-sm leading-6 text-gray-500">
+  Inviando la richiesta, i dati inseriti saranno trattati da EdilRate e
+  trasmessi all&apos;impresa selezionata per consentirle di ricontattarti.{" "}
+  <a
+    href="/privacy"
+    className="font-medium text-gray-700 underline underline-offset-4 hover:text-black"
+  >
+    Maggiori informazioni nella Privacy Policy
+  </a>
+  .
+</p>
+
 <Button
   onClick={submitQuoteRequest}
   className="w-full sm:w-auto"

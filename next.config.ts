@@ -4,11 +4,11 @@ const isDev = process.env.NODE_ENV === "development";
 
 const contentSecurityPolicy = `
   default-src 'self';
-  script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""};
+  script-src 'self' 'unsafe-inline' https://cloud.umami.is${isDev ? " 'unsafe-eval'" : ""};
   style-src 'self' 'unsafe-inline';
   img-src 'self' data: blob: https://zrpiuvojntdbjuerwycl.supabase.co;
   font-src 'self' data:;
-  connect-src 'self' https://zrpiuvojntdbjuerwycl.supabase.co wss://zrpiuvojntdbjuerwycl.supabase.co;
+  connect-src 'self' https://zrpiuvojntdbjuerwycl.supabase.co wss://zrpiuvojntdbjuerwycl.supabase.co https://cloud.umami.is;
   object-src 'none';
   base-uri 'self';
   form-action 'self';

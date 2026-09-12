@@ -8,7 +8,8 @@ const contentSecurityPolicy = `
   style-src 'self' 'unsafe-inline';
   img-src 'self' data: blob: https://zrpiuvojntdbjuerwycl.supabase.co;
   font-src 'self' data:;
-connect-src 'self' https://zrpiuvojntdbjuerwycl.supabase.co wss://zrpiuvojntdbjuerwycl.supabase.co https://cloud.umami.is https://gateway.umami.is;  object-src 'none';
+  connect-src 'self' https://zrpiuvojntdbjuerwycl.supabase.co wss://zrpiuvojntdbjuerwycl.supabase.co https://cloud.umami.is https://gateway.umami.is;
+  object-src 'none';
   base-uri 'self';
   form-action 'self';
   frame-ancestors 'none';

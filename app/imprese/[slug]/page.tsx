@@ -391,6 +391,25 @@ setReviews(loadedReviews);
         return;
       }
   
+      if (typeof window !== "undefined") {
+        const umami = (
+          window as typeof window & {
+            umami?: {
+              track: (
+                event: string,
+                data?: Record<string, string | number | boolean>
+              ) => void;
+            };
+          }
+        ).umami;
+      
+        umami?.track("review_submit", {
+          company_id: company.id,
+          company_slug: company.slug,
+          rating,
+        });
+      }
+
       showToast("Recensione pubblicata correttamente.");
     }
   

@@ -318,6 +318,24 @@ setReviews(loadedReviews);
     setQuoteMessage("");
     setQuoteSent(true);
   
+    if (typeof window !== "undefined") {
+      const umami = (
+        window as typeof window & {
+          umami?: {
+            track: (
+              event: string,
+              data?: Record<string, string | number | boolean>
+            ) => void;
+          };
+        }
+      ).umami;
+    
+      umami?.track("quote_submit", {
+        company_id: company.id,
+        company_slug: company.slug,
+      });
+    }
+
     showToast(
       "Richiesta di preventivo inviata correttamente all’azienda."
     );

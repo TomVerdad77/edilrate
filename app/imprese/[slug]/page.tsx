@@ -272,6 +272,24 @@ setReviews(loadedReviews);
   
     setExistingClaim(data.claim);
   
+    if (typeof window !== "undefined") {
+      const umami = (
+        window as typeof window & {
+          umami?: {
+            track: (
+              event: string,
+              data?: Record<string, string | number | boolean>
+            ) => void;
+          };
+        }
+      ).umami;
+    
+      umami?.track("claim_submit", {
+        company_id: company.id,
+        company_slug: company.slug,
+      });
+    }
+
     showToast(
       "Richiesta di rivendicazione inviata correttamente. Sarà verificata dal team EdilRate."
     );

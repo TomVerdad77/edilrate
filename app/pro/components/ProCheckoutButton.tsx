@@ -52,9 +52,24 @@ export default function ProCheckoutButton({
   return;
 }
 
-      if (data.url) {
-        window.location.href = data.url;
+if (data.url) {
+    const umami = (
+      window as typeof window & {
+        umami?: {
+          track: (
+            event: string,
+            data?: Record<string, string | number | boolean>
+          ) => void;
+        };
       }
+    ).umami;
+  
+    umami?.track("pro_checkout_start", {
+      plan,
+    });
+  
+    window.location.href = data.url;
+  }
     } catch (error) {
       console.error("Checkout error:", error);
       alert("Si è verificato un errore.");

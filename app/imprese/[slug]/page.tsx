@@ -46,6 +46,26 @@ const [toastType, setToastType] = useState<"success" | "error">("success");
     loadData();
   }, []);
 
+  useEffect(() => {
+    if (!company?.id) return;
+  
+    const umami = (
+      window as typeof window & {
+        umami?: {
+          track: (
+            event: string,
+            data?: Record<string, string | number | boolean>
+          ) => void;
+        };
+      }
+    ).umami;
+  
+    umami?.track("view_company", {
+      company_id: company.id,
+      company_slug: company.slug,
+    });
+  }, [company?.id]);
+
   const loadData = async () => {
     const path = window.location.pathname;
     const slug = path.split("/").pop();

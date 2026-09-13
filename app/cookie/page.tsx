@@ -21,7 +21,7 @@ export default function CookiePage() {
         <h1 className="text-5xl font-bold">Cookie Policy</h1>
 
         <p className="mt-6 text-gray-600">
-          Ultimo aggiornamento: 29 agosto 2026
+          Ultimo aggiornamento: 13 settembre 2026
         </p>
 
         <div className="mt-12 space-y-10 text-gray-700 leading-relaxed">
@@ -107,7 +107,41 @@ export default function CookiePage() {
 
           <section>
             <h2 className="text-2xl font-semibold text-black">
-              5. Cookie di profilazione e marketing
+              5. Analisi statistica con Umami
+            </h2>
+
+            <p className="mt-4">
+              EdilRate utilizza Umami Analytics per ottenere statistiche
+              aggregate sull&apos;utilizzo della piattaforma e comprenderne
+              meglio le modalità di navigazione e utilizzo.
+            </p>
+
+            <p className="mt-4">
+              Nella configurazione adottata da EdilRate, Umami non utilizza
+              cookie di profilazione e non viene utilizzato per creare profili
+              pubblicitari individuali degli utenti.
+            </p>
+
+            <p className="mt-4">
+              EdilRate utilizza inoltre eventi statistici per misurare
+              l&apos;utilizzo di alcune funzionalità della piattaforma, come la
+              ricerca e la visualizzazione delle imprese, l&apos;invio di
+              richieste di preventivo, la pubblicazione di recensioni, le
+              richieste di rivendicazione delle schede aziendali e
+              l&apos;interazione con EdilRate PRO.
+            </p>
+
+            <p className="mt-4">
+              Tali eventi sono configurati da EdilRate in modo da non
+              trasmettere intenzionalmente a Umami dati quali nome, indirizzo
+              email, numero di telefono o contenuto delle recensioni e delle
+              richieste di preventivo.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-2xl font-semibold text-black">
+              6. Cookie di profilazione e marketing
             </h2>
 
             <p className="mt-4">
@@ -117,17 +151,17 @@ export default function CookiePage() {
             </p>
 
             <p className="mt-4">
-              Qualora in futuro vengano introdotti strumenti di analisi,
-              profilazione, advertising o altre tecnologie non strettamente
-              necessarie che richiedano il consenso dell&apos;utente, EdilRate
-              aggiornerà la presente Cookie Policy e adotterà, ove necessario,
-              strumenti per la raccolta e la gestione preventiva del consenso.
+              Qualora in futuro vengano introdotti strumenti di profilazione,
+              advertising o altre tecnologie non strettamente necessarie che
+              richiedano il consenso dell&apos;utente, EdilRate aggiornerà la
+              presente Cookie Policy e adotterà, ove necessario, strumenti per
+              la raccolta e la gestione preventiva del consenso.
             </p>
           </section>
 
           <section>
             <h2 className="text-2xl font-semibold text-black">
-              6. Servizi di terze parti
+              7. Servizi di terze parti
             </h2>
 
             <p className="mt-4">
@@ -138,13 +172,13 @@ export default function CookiePage() {
 
             <p className="mt-4">
               Tra i principali fornitori utilizzati dalla piattaforma possono
-              rientrare Supabase, Stripe, Google e Meta/Facebook.
+              rientrare Supabase, Stripe, Umami, Google e Meta/Facebook.
             </p>
           </section>
 
           <section>
             <h2 className="text-2xl font-semibold text-black">
-              7. Gestione tramite il browser
+              8. Gestione tramite il browser
             </h2>
 
             <p className="mt-4">
@@ -163,8 +197,8 @@ export default function CookiePage() {
 
           <section>
             <h2 className="text-2xl font-semibold text-black">
-              8. Privacy Policy
-            </h2>
+              9. Privacy Policy
+          </h2>
 
             <p className="mt-4">
               Per ulteriori informazioni sul trattamento dei dati personali
@@ -175,7 +209,7 @@ export default function CookiePage() {
 
           <section>
             <h2 className="text-2xl font-semibold text-black">
-              9. Modifiche alla Cookie Policy
+              10. Modifiche alla Cookie Policy
             </h2>
 
             <p className="mt-4">
@@ -192,7 +226,7 @@ export default function CookiePage() {
 
           <section>
             <h2 className="text-2xl font-semibold text-black">
-              10. Contatti
+              11. Contatti
             </h2>
 
             <p className="mt-4">

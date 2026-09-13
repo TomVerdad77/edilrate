@@ -21,7 +21,7 @@ export default function PrivacyPage() {
         <h1 className="text-5xl font-bold">Privacy Policy</h1>
 
         <p className="mt-6 text-gray-600">
-          Ultimo aggiornamento: 29 agosto 2026
+          Ultimo aggiornamento: 13 settembre 2026
         </p>
 
         <div className="mt-12 space-y-10 text-gray-700 leading-relaxed">
@@ -121,6 +121,13 @@ export default function PrivacyPage() {
                 funzionamento e alla protezione della piattaforma;
               </li>
               <li>
+                dati statistici e tecnici relativi all&apos;utilizzo della
+                piattaforma, come pagine visitate, provenienza della visita,
+                browser, sistema operativo, tipo di dispositivo, area
+                geografica approssimativa ed eventi relativi
+                all&apos;interazione con alcune funzionalità;
+              </li>
+              <li>
                 informazioni relative allo stato degli abbonamenti EdilRate
                 PRO.
               </li>
@@ -165,6 +172,11 @@ export default function PrivacyPage() {
               <li>
                 garantire sicurezza, manutenzione e corretto funzionamento del
                 servizio;
+              </li>
+              <li>
+                ottenere statistiche aggregate sull&apos;utilizzo della
+                piattaforma, misurare l&apos;utilizzo delle principali
+                funzionalità e migliorare il servizio;
               </li>
               <li>
                 adempiere a eventuali obblighi previsti dalla legge.
@@ -314,6 +326,11 @@ export default function PrivacyPage() {
               <li>Supabase, per database, autenticazione e archiviazione;</li>
               <li>Vercel, per hosting e distribuzione della piattaforma;</li>
               <li>Stripe, per pagamenti e gestione degli abbonamenti;</li>
+              <li>
+                Umami, per statistiche aggregate sull&apos;utilizzo della
+                piattaforma e analisi delle principali interazioni degli
+                utenti;
+              </li>
               <li>
                 Google e Meta/Facebook, quando utilizzati come provider di
                 autenticazione.

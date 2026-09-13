@@ -52,6 +52,31 @@ export default function CompaniesPage() {
     loadCompanies();
   }, []);
 
+  useEffect(() => {
+    const trimmedSearch = search.trim();
+  
+    if (trimmedSearch.length < 2) return;
+  
+    const timeout = window.setTimeout(() => {
+      const umami = (
+        window as typeof window & {
+          umami?: {
+            track: (
+              event: string,
+              data?: Record<string, string | number | boolean>
+            ) => void;
+          };
+        }
+      ).umami;
+  
+      umami?.track("search_company", {
+        query: trimmedSearch,
+      });
+    }, 800);
+  
+    return () => window.clearTimeout(timeout);
+  }, [search]);
+
   const showToast = (
     message: string,
     type: "success" | "error" = "success"

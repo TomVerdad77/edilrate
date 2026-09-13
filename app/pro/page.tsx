@@ -1,4 +1,5 @@
 import ProCheckoutButton from "./components/ProCheckoutButton";
+import ProViewTracker from "./components/ProViewTracker";
 
 export const metadata = {
   title: "EdilRate PRO | Più visibilità per la tua impresa",
@@ -168,6 +169,8 @@ export const metadata = {
   export default function ProPage() {
     return (
       <main>
+        <ProViewTracker />
+  
         {/* HERO */}
         <section className="relative overflow-hidden border-b">
           <div className="absolute inset-0 bg-gradient-to-b from-gray-50 to-white" />

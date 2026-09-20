@@ -14,6 +14,7 @@ export default function AdminPage() {
   const [quotesCount, setQuotesCount] = useState(0);
   const [pendingClaimsCount, setPendingClaimsCount] = useState(0);
   const [newFeedbackCount, setNewFeedbackCount] = useState(0);
+  const [pendingSuggestionsCount, setPendingSuggestionsCount] = useState(0);
   const [recentActivities, setRecentActivities] = useState<any[]>([]);
 
   useEffect(() => {
@@ -67,6 +68,35 @@ export default function AdminPage() {
       .select("*", { count: "exact", head: true })
       .eq("status", "new");
 
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      
+      let companySuggestions: any[] = [];
+      
+      if (session) {
+        const suggestionsResponse = await fetch(
+          "/api/admin/company-suggestions",
+          {
+            headers: {
+              Authorization: `Bearer ${session.access_token}`,
+            },
+          }
+        );
+      
+        if (suggestionsResponse.ok) {
+          const suggestionsData = await suggestionsResponse.json();
+      
+          companySuggestions = suggestionsData.suggestions || [];
+      
+          const pendingSuggestions = companySuggestions.filter(
+            (item: any) => item.status === "pending"
+          ).length;
+      
+          setPendingSuggestionsCount(pendingSuggestions);
+        }
+      }
+
     setCompaniesCount(companies || 0);
     setReviewsCount(reviews || 0);
     setQuotesCount(quotes || 0);
@@ -102,6 +132,15 @@ const { data: latestFeedback } = await supabase
       description: item.subject || "Feedback",
       date: item.created_at,
       href: "/admin/feedback",
+    })),
+    ...companySuggestions.slice(0, 3).map((item: any) => ({
+      id: `suggestion-${item.id}`,
+      emoji: "📍",
+      type: "Segnalazione",
+      title: "Nuova impresa segnalata",
+      description: `${item.company_name} · ${item.city}`,
+      date: item.created_at,
+      href: "/admin/segnalazioni",
     })),
   ]
 
@@ -161,6 +200,13 @@ setRecentActivities(activities);
       emoji: "💬",
       href: "/admin/feedback",
     },
+
+    {
+      label: "Imprese segnalate",
+      value: pendingSuggestionsCount,
+      emoji: "📍",
+      href: "/admin/segnalazioni",
+    },
   ];
 
   const actions = [
@@ -211,6 +257,19 @@ setRecentActivities(activities);
       priority: newFeedbackCount > 0,
     },
     {
+      title: "Segnalazioni imprese",
+      description:
+        "Verifica le imprese segnalate dagli utenti e aggiungile alla piattaforma.",
+      href: "/admin/segnalazioni",
+      emoji: "📍",
+      value: pendingSuggestionsCount,
+      badge:
+        pendingSuggestionsCount === 1
+          ? "1 da gestire"
+          : `${pendingSuggestionsCount} da gestire`,
+      priority: pendingSuggestionsCount > 0,
+    },
+    {
       title: "Gestisci recensioni",
       description:
         "Controlla e modera le recensioni pubblicate sulla piattaforma.",
@@ -247,7 +306,11 @@ setRecentActivities(activities);
           Amministrazione EdilRate
         </span>
 
-        {(pendingClaimsCount > 0 || newFeedbackCount > 0) && (
+        {(
+  pendingClaimsCount > 0 ||
+  newFeedbackCount > 0 ||
+  pendingSuggestionsCount > 0
+) && (
           <span className="rounded-full bg-orange-100 px-4 py-2 text-sm font-medium text-orange-700">
             Azioni richieste
           </span>
@@ -346,7 +409,7 @@ setRecentActivities(activities);
   </h2>
 </div>
 
-        <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
+        <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-6">
         {stats.map((item) => (
   <StatCard
     key={item.label}

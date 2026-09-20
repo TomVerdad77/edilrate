@@ -586,6 +586,24 @@ const availableCities = Array.from(
           </div>
         </article>
       ))}
+
+      <div className="mt-4 rounded-3xl border border-dashed bg-gray-50 px-6 py-8 text-center">
+        <p className="font-medium text-black">
+          Non trovi l&apos;impresa che stai cercando?
+        </p>
+
+        <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-gray-500">
+          Segnalacela e faremo il possibile per aggiungerla a EdilRate entro 24 ore.
+        </p>
+
+        <Button
+          href="/segnala-impresa"
+          variant="secondary"
+          className="mt-5"
+        >
+          Segnala un&apos;impresa
+        </Button>
+      </div>
     </div>
   ) : (
     <div className="rounded-3xl border bg-white px-6 py-16 text-center shadow-sm">
@@ -598,21 +616,28 @@ const availableCities = Array.from(
       </h2>
 
       <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-gray-500">
-        Prova a modificare la ricerca oppure rimuovi uno o più filtri.
-      </p>
+  Prova a modificare la ricerca oppure rimuovi uno o più filtri.
+  Se l&apos;impresa che cerchi non è ancora presente su EdilRate,
+  puoi segnalarcela.
+</p>
 
-      <Button
-        variant="secondary"
-        onClick={() => {
-          setSearch("");
-          setCity("");
-          setProvince("");
-          setCategory("");
-        }}
-        className="mt-6"
-      >
-        Azzera tutti i filtri
-      </Button>
+<div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
+  <Button
+    variant="secondary"
+    onClick={() => {
+      setSearch("");
+      setCity("");
+      setProvince("");
+      setCategory("");
+    }}
+  >
+    Azzera tutti i filtri
+  </Button>
+
+  <Button href="/segnala-impresa">
+    Segnala un&apos;impresa
+  </Button>
+</div>
     </div>
   )}
 </div>

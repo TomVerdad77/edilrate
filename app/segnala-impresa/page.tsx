@@ -10,6 +10,7 @@ export default function SegnalaImpresaPage() {
   const [city, setCity] = useState("");
   const [province, setProvince] = useState("");
   const [website, setWebsite] = useState("");
+  const [email, setEmail] = useState("");
   const [notes, setNotes] = useState("");
   const [sent, setSent] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -51,6 +52,7 @@ export default function SegnalaImpresaPage() {
           city: city.trim(),
           province: province.trim(),
           website: website.trim(),
+          email: email.trim(),
           notes: notes.trim(),
         }),
       });
@@ -83,6 +85,7 @@ export default function SegnalaImpresaPage() {
       setCity("");
       setProvince("");
       setWebsite("");
+      setEmail("");
       setNotes("");
 
       showToast("Impresa segnalata correttamente.");
@@ -161,7 +164,7 @@ export default function SegnalaImpresaPage() {
           </div>
 
           <div>
-            <label className="mb-2 block text-m font-medium">
+            <label className="mb-2 block text-sm font-medium">
               Provincia
             </label>
 
@@ -194,6 +197,30 @@ export default function SegnalaImpresaPage() {
 
           <div>
             <label className="mb-2 block text-sm font-medium">
+              La tua email
+              <span className="ml-1 font-normal text-gray-500">
+                (opzionale)
+              </span>
+            </label>
+
+            <input
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="nome@esempio.it"
+              type="email"
+              maxLength={254}
+              autoComplete="email"
+              className="w-full rounded-xl border px-4 py-3 outline-none transition focus:border-black focus:ring-2 focus:ring-black/5"
+            />
+
+            <p className="mt-2 text-sm text-gray-500">
+              Inseriscila se vuoi essere avvisato quando l&apos;impresa
+              sarà disponibile su EdilRate.
+            </p>
+          </div>
+
+          <div>
+            <label className="mb-2 block text-sm font-medium">
               Altre informazioni
               <span className="ml-1 font-normal text-gray-500">
                 (opzionale)
@@ -203,7 +230,7 @@ export default function SegnalaImpresaPage() {
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="Indirizzo, attività svlta o altre informazioni utili..."
+              placeholder="Indirizzo, attività svolta o altre informazioni utili..."
               rows={4}
               maxLength={1000}
               className="w-full resize-y rounded-xl border px-4 py-3 outline-none transition focus:border-black focus:ring-2 focus:ring-black/5"

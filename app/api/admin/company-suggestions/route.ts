@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { supabaseAdmin } from "@/src/lib/supabase-admin";
+import { Resend } from "resend";
 
 export const runtime = "nodejs";
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 async function getAdminUser(request: Request) {
   const authHeader = request.headers.get("authorization");
@@ -123,6 +125,11 @@ export async function PATCH(request: Request) {
         ? body.id.trim()
         : "";
 
+    const companyId =
+      typeof body.companyId === "string"
+        ? body.companyId.trim()
+        : "";
+
     const status =
       body.status === "pending" ||
       body.status === "added" ||
@@ -137,10 +144,17 @@ export async function PATCH(request: Request) {
       );
     }
 
+    if (status === "added" && !companyId) {
+      return NextResponse.json(
+        { error: "Seleziona l'impresa collegata." },
+        { status: 400 }
+      );
+    }
+
     const { data: suggestion, error: lookupError } =
       await supabaseAdmin
         .from("company_suggestions")
-        .select("id")
+        .select("id, company_name, email, status")
         .eq("id", id)
         .maybeSingle();
 
@@ -163,12 +177,59 @@ export async function PATCH(request: Request) {
       );
     }
 
+    let linkedCompany:
+      | {
+          id: string;
+          name: string;
+          slug: string;
+        }
+      | null = null;
+
+    if (status === "added") {
+      const { data: company, error: companyError } =
+        await supabaseAdmin
+          .from("companies")
+          .select("id, name, slug")
+          .eq("id", companyId)
+          .maybeSingle();
+
+      if (companyError) {
+        console.error(
+          "Company suggestion linked company lookup error:",
+          companyError
+        );
+
+        return NextResponse.json(
+          {
+            error:
+              "Impossibile verificare l'impresa selezionata.",
+          },
+          { status: 500 }
+        );
+      }
+
+      if (!company) {
+        return NextResponse.json(
+          { error: "L'impresa selezionata non esiste." },
+          { status: 404 }
+        );
+      }
+
+      linkedCompany = company;
+    }
+
     const { error: updateError } = await supabaseAdmin
       .from("company_suggestions")
-      .update({ status })
+      .update({
+        status,
+        company_id:
+          status === "added"
+            ? companyId
+            : null,
+      })
       .eq("id", id);
 
-      if (updateError) {
+    if (updateError) {
       console.error(
         "Company suggestion update error:",
         updateError
@@ -178,6 +239,74 @@ export async function PATCH(request: Request) {
         { error: "Impossibile aggiornare la segnalazione." },
         { status: 500 }
       );
+    }
+
+    if (
+      status === "added" &&
+      suggestion.status !== "added" &&
+      suggestion.email &&
+      linkedCompany
+    ) {
+      try {
+        const companyUrl = `https://edilrate.it/imprese/${linkedCompany.slug}`;
+    
+        const { error: emailError } = await resend.emails.send({
+          from: "EdilRate <info@edilrate.it>",
+          to: suggestion.email,
+          subject: "L’impresa che hai segnalato è ora su EdilRate",
+          html: `
+            <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #111827; max-width: 600px; margin: 0 auto;">
+              <h2 style="margin-bottom: 16px;">
+                L’impresa che hai segnalato è ora su EdilRate
+              </h2>
+    
+              <p>
+                Ciao,
+              </p>
+    
+              <p>
+                grazie per averci segnalato
+                <strong>${linkedCompany.name}</strong>.
+                L’impresa è stata aggiunta a EdilRate ed è ora disponibile sulla piattaforma.
+              </p>
+    
+              <p>
+                Puoi visitare il suo profilo e, se hai avuto un’esperienza con questa impresa,
+                lasciare una recensione per aiutare altri utenti nella loro scelta.
+              </p>
+    
+              <p style="margin: 28px 0;">
+                <a
+                  href="${companyUrl}"
+                  style="display: inline-block; background: #111827; color: #ffffff; text-decoration: none; padding: 12px 20px; border-radius: 8px; font-weight: 600;"
+                >
+                  Vai al profilo e lascia una recensione
+                </a>
+              </p>
+    
+              <p style="font-size: 14px; color: #6b7280;">
+                Grazie per contribuire a rendere EdilRate più utile per tutti.
+              </p>
+    
+              <p style="font-size: 14px; color: #6b7280;">
+                Il team EdilRate
+              </p>
+            </div>
+          `,
+        });
+    
+        if (emailError) {
+          console.error(
+            "Company suggestion notification email error:",
+            emailError
+          );
+        }
+      } catch (emailError) {
+        console.error(
+          "Company suggestion notification email exception:",
+          emailError
+        );
+      }
     }
 
     return NextResponse.json({

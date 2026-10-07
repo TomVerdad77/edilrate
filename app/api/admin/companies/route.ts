@@ -73,6 +73,55 @@ async function getAdminUser(request: Request) {
   };
 }
 
+export async function GET(request: Request) {
+  try {
+    const { error: authError } = await getAdminUser(request);
+
+    if (authError) {
+      return authError;
+    }
+
+    const { searchParams } = new URL(request.url);
+
+    const search = (searchParams.get("search") || "")
+      .trim()
+      .slice(0, 100);
+
+    if (!search) {
+      return NextResponse.json({
+        companies: [],
+      });
+    }
+
+    const { data, error } = await supabaseAdmin
+      .from("companies")
+      .select("id, name, slug, city, province")
+      .ilike("name", `%${search}%`)
+      .order("name", { ascending: true })
+      .limit(10);
+
+    if (error) {
+      console.error("Admin company search error:", error);
+
+      return NextResponse.json(
+        { error: "Impossibile cercare le aziende." },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json({
+      companies: data || [],
+    });
+  } catch (error) {
+    console.error("Admin company GET error:", error);
+
+    return NextResponse.json(
+      { error: "Richiesta non valida." },
+      { status: 400 }
+    );
+  }
+}
+
 export async function PATCH(request: Request) {
   try {
     const { error: authError } = await getAdminUser(request);

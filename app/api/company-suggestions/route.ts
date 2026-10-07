@@ -7,7 +7,10 @@ const MAX_COMPANY_NAME_LENGTH = 150;
 const MAX_CITY_LENGTH = 100;
 const MAX_PROVINCE_LENGTH = 100;
 const MAX_WEBSITE_LENGTH = 500;
+const MAX_EMAIL_LENGTH = 254;
 const MAX_NOTES_LENGTH = 1000;
+
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export async function POST(request: Request) {
   try {
@@ -33,6 +36,11 @@ export async function POST(request: Request) {
         ? body.website.trim()
         : "";
 
+    const email =
+      typeof body.email === "string"
+        ? body.email.trim().toLowerCase()
+        : "";
+
     const notes =
       typeof body.notes === "string"
         ? body.notes.trim()
@@ -50,6 +58,7 @@ export async function POST(request: Request) {
       city.length > MAX_CITY_LENGTH ||
       province.length > MAX_PROVINCE_LENGTH ||
       website.length > MAX_WEBSITE_LENGTH ||
+      email.length > MAX_EMAIL_LENGTH ||
       notes.length > MAX_NOTES_LENGTH
     ) {
       return NextResponse.json(
@@ -76,6 +85,15 @@ export async function POST(request: Request) {
       }
     }
 
+    if (email && !EMAIL_REGEX.test(email)) {
+      return NextResponse.json(
+        {
+          error: "Inserisci un indirizzo email valido.",
+        },
+        { status: 400 }
+      );
+    }
+
     const { error } = await supabaseAdmin
       .from("company_suggestions")
       .insert({
@@ -83,6 +101,7 @@ export async function POST(request: Request) {
         city,
         province: province || null,
         website: website || null,
+        email: email || null,
         notes: notes || null,
         status: "pending",
       });

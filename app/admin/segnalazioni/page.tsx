@@ -14,9 +14,19 @@ type CompanySuggestion = {
   city: string;
   province: string | null;
   website: string | null;
+  email: string | null;
+  company_id: string | null;
   notes: string | null;
   status: SuggestionStatus;
   created_at: string;
+};
+
+type CompanySearchResult = {
+  id: string;
+  name: string;
+  slug: string;
+  city: string | null;
+  province: string | null;
 };
 
 export default function AdminSegnalazioniPage() {
@@ -28,6 +38,20 @@ export default function AdminSegnalazioniPage() {
   >("pending");
 
   const [processingId, setProcessingId] = useState<string | null>(null);
+  const [companySearch, setCompanySearch] = useState<
+  Record<string, string>
+>({});
+
+const [companyResults, setCompanyResults] = useState<
+  Record<string, CompanySearchResult[]>
+>({});
+
+const [selectedCompany, setSelectedCompany] = useState<
+  Record<string, CompanySearchResult | null>
+>({});
+
+const [searchingCompanyId, setSearchingCompanyId] =
+  useState<string | null>(null);
 
   const [toastMessage, setToastMessage] = useState("");
   const [toastType, setToastType] =
@@ -117,10 +141,79 @@ export default function AdminSegnalazioniPage() {
     setLoading(false);
   };
 
+  const searchCompanies = async (
+    suggestionId: string,
+    search: string
+  ) => {
+    const query = search.trim();
+  
+    if (!query) {
+      setCompanyResults((current) => ({
+        ...current,
+        [suggestionId]: [],
+      }));
+      return;
+    }
+  
+    setSearchingCompanyId(suggestionId);
+  
+    try {
+      const session = await getSession();
+  
+      if (!session) {
+        showToast(
+          "Sessione non valida. Effettua nuovamente l'accesso.",
+          "error"
+        );
+        return;
+      }
+  
+      const response = await fetch(
+        `/api/admin/companies?search=${encodeURIComponent(query)}`,
+        {
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+          },
+        }
+      );
+  
+      const data = await response.json();
+  
+      if (!response.ok) {
+        showToast(
+          data.error || "Impossibile cercare le aziende.",
+          "error"
+        );
+        return;
+      }
+  
+      setCompanyResults((current) => ({
+        ...current,
+        [suggestionId]: data.companies || [],
+      }));
+    } catch (error) {
+      console.error("Company search error:", error);
+  
+      showToast(
+        "Si è verificato un errore durante la ricerca.",
+        "error"
+      );
+    } finally {
+      setSearchingCompanyId(null);
+    }
+  };
+
   const updateStatus = async (
     id: string,
     status: SuggestionStatus
   ) => {
+    if (status === "added" && !selectedCompany[id]) {
+      showToast(
+        "Seleziona prima l'impresa che hai aggiunto a EdilRate.",
+        "error"
+      );
+      return;
+    }
     setProcessingId(id);
 
     try {
@@ -145,6 +238,10 @@ export default function AdminSegnalazioniPage() {
           body: JSON.stringify({
             id,
             status,
+            companyId:
+              status === "added"
+                ? selectedCompany[id]?.id || null
+                : null,
           }),
         }
       );
@@ -427,6 +524,136 @@ export default function AdminSegnalazioniPage() {
                           minute: "2-digit",
                         })}
                       </p>
+                      {item.status === "pending" && (
+  <div className="mt-6 rounded-2xl border bg-gray-50 p-5">
+    <p className="text-sm font-semibold text-black">
+      Collega l&apos;impresa aggiunta
+    </p>
+
+    <p className="mt-1 text-sm text-gray-500">
+      Cerca l&apos;impresa dopo averla aggiunta a EdilRate e
+      selezionala prima di segnare la segnalazione come aggiunta.
+    </p>
+
+    <div className="mt-4 flex flex-col gap-3 sm:flex-row">
+      <input
+        type="text"
+        value={
+          companySearch[item.id] ??
+          item.company_name
+        }
+        onChange={(e) => {
+          const value = e.target.value;
+
+          setCompanySearch((current) => ({
+            ...current,
+            [item.id]: value,
+          }));
+
+          setSelectedCompany((current) => ({
+            ...current,
+            [item.id]: null,
+          }));
+        }}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+
+            searchCompanies(
+              item.id,
+              companySearch[item.id] ??
+                item.company_name
+            );
+          }
+        }}
+        placeholder="Cerca impresa..."
+        className="min-w-0 flex-1 rounded-xl border bg-white px-4 py-3 text-sm outline-none transition focus:border-black focus:ring-2 focus:ring-black/5"
+      />
+
+      <Button
+        variant="secondary"
+        onClick={() =>
+          searchCompanies(
+            item.id,
+            companySearch[item.id] ??
+              item.company_name
+          )
+        }
+        disabled={searchingCompanyId === item.id}
+      >
+        {searchingCompanyId === item.id
+          ? "Ricerca..."
+          : "Cerca"}
+      </Button>
+    </div>
+
+    {(companyResults[item.id] || []).length > 0 && (
+      <div className="mt-3 space-y-2">
+        {(companyResults[item.id] || []).map(
+          (company) => {
+            const isSelected =
+              selectedCompany[item.id]?.id ===
+              company.id;
+
+            return (
+              <button
+                key={company.id}
+                type="button"
+                onClick={() =>
+                  setSelectedCompany((current) => ({
+                    ...current,
+                    [item.id]: company,
+                  }))
+                }
+                className={`w-full rounded-xl border p-3 text-left transition ${
+                  isSelected
+                    ? "border-black bg-white ring-2 ring-black/5"
+                    : "bg-white hover:border-gray-400"
+                }`}
+              >
+                <div className="flex items-center justify-between gap-4">
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-medium text-black">
+                      {company.name}
+                    </p>
+
+                    <p className="mt-1 text-xs text-gray-500">
+                      {company.city || "Città non indicata"}
+                      {company.province
+                        ? ` · ${company.province}`
+                        : ""}
+                    </p>
+                  </div>
+
+                  <span
+                    className={`shrink-0 rounded-full px-3 py-1 text-xs font-medium ${
+                      isSelected
+                        ? "bg-black text-white"
+                        : "bg-gray-100 text-gray-600"
+                    }`}
+                  >
+                    {isSelected
+                      ? "Selezionata"
+                      : "Seleziona"}
+                  </span>
+                </div>
+              </button>
+            );
+          }
+        )}
+      </div>
+    )}
+
+    {selectedCompany[item.id] && (
+      <div className="mt-3 rounded-xl bg-green-50 px-4 py-3 text-sm text-green-700">
+        ✓ Collegata a{" "}
+        <strong>
+          {selectedCompany[item.id]?.name}
+        </strong>
+      </div>
+    )}
+  </div>
+)}
                     </div>
 
                     <div className="flex w-full shrink-0 flex-col gap-3 sm:flex-row lg:w-auto lg:min-w-[220px] lg:flex-col">

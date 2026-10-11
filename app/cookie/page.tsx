@@ -21,7 +21,7 @@ export default function CookiePage() {
         <h1 className="text-5xl font-bold">Cookie Policy</h1>
 
         <p className="mt-6 text-gray-600">
-          Ultimo aggiornamento: 13 settembre 2026
+        Ultimo aggiornamento: 11 ottobre 2026
         </p>
 
         <div className="mt-12 space-y-10 text-gray-700 leading-relaxed">
@@ -140,24 +140,39 @@ export default function CookiePage() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold text-black">
-              6. Cookie di profilazione e marketing
-            </h2>
+  <h2 className="text-2xl font-semibold text-black">
+    6. Misurazione pubblicitaria e Google Ads
+  </h2>
 
-            <p className="mt-4">
-              Al momento EdilRate non utilizza direttamente cookie di
-              profilazione o marketing per creare profili pubblicitari degli
-              utenti durante la normale navigazione sulla piattaforma.
-            </p>
+  <p className="mt-4">
+    EdilRate utilizza Google Ads e il Google tag per misurare
+    l&apos;efficacia delle campagne pubblicitarie e comprendere se gli
+    utenti che raggiungono la piattaforma tramite annunci compiono
+    determinate azioni rilevanti.
+  </p>
 
-            <p className="mt-4">
-              Qualora in futuro vengano introdotti strumenti di profilazione,
-              advertising o altre tecnologie non strettamente necessarie che
-              richiedano il consenso dell&apos;utente, EdilRate aggiornerà la
-              presente Cookie Policy e adotterà, ove necessario, strumenti per
-              la raccolta e la gestione preventiva del consenso.
-            </p>
-          </section>
+  <p className="mt-4">
+    L&apos;utilizzo delle tecnologie pubblicitarie di Google soggette a
+    consenso è gestito tramite Google Consent Mode. Per impostazione
+    predefinita, le funzionalità relative alla memorizzazione
+    pubblicitaria, ai dati degli utenti per finalità pubblicitarie e
+    alla personalizzazione degli annunci sono impostate come non
+    consentite.
+  </p>
+
+  <p className="mt-4">
+    Tali funzionalità vengono abilitate solo dopo una scelta positiva
+    dell&apos;utente attraverso il sistema di gestione del consenso
+    presente sulla piattaforma. In caso di rifiuto, il consenso alle
+    funzionalità pubblicitarie rimane negato.
+  </p>
+
+  <p className="mt-4">
+    L&apos;utente può consultare e modificare le proprie preferenze
+    relative al consenso attraverso gli strumenti messi a disposizione
+    da EdilRate.
+  </p>
+</section>
 
           <section>
             <h2 className="text-2xl font-semibold text-black">

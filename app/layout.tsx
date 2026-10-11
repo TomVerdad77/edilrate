@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Script from "next/script";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import CookieBanner from "@/components/CookieBanner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -104,31 +105,49 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        {children}
-  
-        {/* Umami Analytics */}
-        <Script
-          src="https://cloud.umami.is/script.js"
-          data-website-id="f249ca3d-9eb0-441c-a274-b025d5aa161d"
-          strategy="afterInteractive"
-        />
-  
-        {/* Google Ads - Google tag */}
-        <Script
-          src="https://www.googletagmanager.com/gtag/js?id=AW-18501465685"
-          strategy="afterInteractive"
-        />
-  
-        <Script id="google-ads-tag" strategy="afterInteractive">
-          {`
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-  
-            gtag('config', 'AW-18501465685');
-          `}
-        </Script>
-      </body>
+  {children}
+
+  {/* Umami Analytics */}
+  <Script
+    src="https://cloud.umami.is/script.js"
+    data-website-id="f249ca3d-9eb0-441c-a274-b025d5aa161d"
+    strategy="afterInteractive"
+  />
+
+  {/* Google Consent Mode v2 - consenso negato di default */}
+  <Script id="google-consent-default" strategy="beforeInteractive">
+    {`
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+
+      gtag('consent', 'default', {
+        ad_storage: 'denied',
+        analytics_storage: 'denied',
+        ad_user_data: 'denied',
+        ad_personalization: 'denied',
+        wait_for_update: 500
+      });
+    `}
+  </Script>
+
+  {/* Google Ads - Google tag */}
+  <Script
+    src="https://www.googletagmanager.com/gtag/js?id=AW-18501465685"
+    strategy="afterInteractive"
+  />
+
+  <Script id="google-ads-tag" strategy="afterInteractive">
+    {`
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'AW-18501465685');
+    `}
+  </Script>
+
+  {/* Banner consenso cookie */}
+  <CookieBanner />
+</body>
     </html>
   );
 }

@@ -4,11 +4,11 @@ const isDev = process.env.NODE_ENV === "development";
 
 const contentSecurityPolicy = `
   default-src 'self';
-  script-src 'self' 'unsafe-inline' https://cloud.umami.is${isDev ? " 'unsafe-eval'" : ""};
+  script-src 'self' 'unsafe-inline' https://cloud.umami.is https://www.googletagmanager.com https://googleads.g.doubleclick.net${isDev ? " 'unsafe-eval'" : ""};
   style-src 'self' 'unsafe-inline';
-  img-src 'self' data: blob: https://zrpiuvojntdbjuerwycl.supabase.co;
+  img-src 'self' data: blob: https://zrpiuvojntdbjuerwycl.supabase.co https://www.google.com https://www.google.it https://googleads.g.doubleclick.net;
   font-src 'self' data:;
-  connect-src 'self' https://zrpiuvojntdbjuerwycl.supabase.co wss://zrpiuvojntdbjuerwycl.supabase.co https://cloud.umami.is https://gateway.umami.is;
+  connect-src 'self' https://zrpiuvojntdbjuerwycl.supabase.co wss://zrpiuvojntdbjuerwycl.supabase.co https://cloud.umami.is https://gateway.umami.is https://www.google.com https://www.google.it https://www.googletagmanager.com https://googleads.g.doubleclick.net;
   object-src 'none';
   base-uri 'self';
   form-action 'self';

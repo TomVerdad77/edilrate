@@ -350,6 +350,23 @@ setReviews(loadedReviews);
       return;
     }
   
+// Google Ads - conversione richiesta preventivo
+if (typeof window !== "undefined") {
+  const gtag = (
+    window as typeof window & {
+      gtag?: (
+        command: string,
+        action: string,
+        params: Record<string, string | number | boolean>
+      ) => void;
+    }
+  ).gtag;
+
+  gtag?.("event", "conversion", {
+    send_to: "AW-18501465685/SVJ_CIu0kZkdENXsl_ZE",
+  });
+}
+    
     setQuoteName("");
     setQuoteEmail("");
     setQuotePhone("");

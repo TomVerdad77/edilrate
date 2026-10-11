@@ -8,7 +8,7 @@ const contentSecurityPolicy = `
   style-src 'self' 'unsafe-inline';
   img-src 'self' data: blob: https://zrpiuvojntdbjuerwycl.supabase.co https://www.google.com https://www.google.it https://googleads.g.doubleclick.net;
   font-src 'self' data:;
-  connect-src 'self' https://zrpiuvojntdbjuerwycl.supabase.co wss://zrpiuvojntdbjuerwycl.supabase.co https://cloud.umami.is https://gateway.umami.is https://www.google.com https://www.google.it https://www.googletagmanager.com https://googleads.g.doubleclick.net;
+  connect-src 'self' https://zrpiuvojntdbjuerwycl.supabase.co wss://zrpiuvojntdbjuerwycl.supabase.co https://cloud.umami.is https://gateway.umami.is https://www.google.com https://www.google.it https://www.googletagmanager.com https://googleads.g.doubleclick.net https://www.googleadservices.com;
   object-src 'none';
   base-uri 'self';
   form-action 'self';

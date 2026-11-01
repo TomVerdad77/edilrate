@@ -17,6 +17,7 @@ export default function AdminAziendePage() {
   const [newName, setNewName] = useState("");
   const [newPhone, setNewPhone] = useState("");
   const [newCity, setNewCity] = useState("");
+  const [newProvince, setNewProvince] = useState("");
   const [newCategory, setNewCategory] = useState("");
   const [newSubcategory, setNewSubcategory] = useState("");
   const [editingCompanyId, setEditingCompanyId] = useState<string | null>(null);
@@ -45,6 +46,7 @@ const resetCompanyForm = () => {
   setNewName("");
   setNewPhone("");
   setNewCity("");
+  setNewProvince("");
   setNewCategory("");
   setNewSubcategory("");
 };
@@ -62,6 +64,7 @@ const resetCompanyForm = () => {
     setNewName(company.name || "");
     setNewPhone(company.phone || "");
     setNewCity(company.city || "");
+    setNewProvince(company.province || "");
     setNewCategory(company.category || "");
     setNewSubcategory(company.description || "");
   };
@@ -97,6 +100,7 @@ const resetCompanyForm = () => {
         name: newName.trim(),
         phone: newPhone.trim(),
         city: newCity.trim(),
+        province: newProvince.trim().toUpperCase(),
         category: newCategory.trim(),
         description: newSubcategory.trim(),
       }),
@@ -201,6 +205,7 @@ if (error) {
         slug,
         phone: newPhone.trim(),
         city: newCity.trim(),
+        province: newProvince.trim().toUpperCase(),
         category: newCategory.trim(),
         description: newSubcategory.trim(),
       }),
@@ -449,6 +454,26 @@ if (error) {
     value={newCity}
     onChange={(e) => setNewCity(e.target.value)}
     placeholder="Trieste"
+    className="mt-2 w-full rounded-2xl border px-4 py-3 outline-none transition focus:border-black focus:ring-2 focus:ring-black/5"
+  />
+</div>
+
+<div>
+  <label
+    htmlFor="admin-company-province"
+    className="text-sm font-medium text-black"
+  >
+    Provincia
+  </label>
+
+  <input
+    id="admin-company-province"
+    value={newProvince}
+    onChange={(e) =>
+      setNewProvince(e.target.value.toUpperCase())
+    }
+    placeholder="Es. TS, PN, UD, GO"
+    maxLength={2}
     className="mt-2 w-full rounded-2xl border px-4 py-3 outline-none transition focus:border-black focus:ring-2 focus:ring-black/5"
   />
 </div>

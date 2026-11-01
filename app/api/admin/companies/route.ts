@@ -268,8 +268,8 @@ export async function POST(request: Request) {
         region: "Friuli Venezia Giulia",
         province:
           typeof body.province === "string"
-            ? body.province.trim().toUpperCase()
-            : "",
+          ? body.province.trim().toUpperCase()
+          : body.province?.toUpperCase() || "",
         average_rating: 0,
         review_count: 0,
         verified: false,

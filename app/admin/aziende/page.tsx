@@ -64,7 +64,18 @@ const resetCompanyForm = () => {
     setNewName(company.name || "");
     setNewPhone(company.phone || "");
     setNewCity(company.city || "");
-    setNewProvince(company.province || "");
+    const provinceNames: Record<string, string> = {
+      TS: "Trieste",
+      GO: "Gorizia",
+      UD: "Udine",
+      PN: "Pordenone",
+    };
+    
+    setNewProvince(
+      provinceNames[(company.province || "").toUpperCase()] ||
+        company.province ||
+        ""
+    );
     setNewCategory(company.category || "");
     setNewSubcategory(company.description || "");
   };
@@ -100,7 +111,7 @@ const resetCompanyForm = () => {
         name: newName.trim(),
         phone: newPhone.trim(),
         city: newCity.trim(),
-        province: newProvince.trim().toUpperCase(),
+        province: newProvince.trim(),
         category: newCategory.trim(),
         description: newSubcategory.trim(),
       }),
@@ -205,7 +216,7 @@ if (error) {
         slug,
         phone: newPhone.trim(),
         city: newCity.trim(),
-        province: newProvince.trim().toUpperCase(),
+        province: newProvince.trim(),
         category: newCategory.trim(),
         description: newSubcategory.trim(),
       }),
@@ -466,16 +477,18 @@ if (error) {
     Provincia
   </label>
 
-  <input
+  <select
     id="admin-company-province"
     value={newProvince}
-    onChange={(e) =>
-      setNewProvince(e.target.value.toUpperCase())
-    }
-    placeholder="Es. TS, PN, UD, GO"
-    maxLength={2}
-    className="mt-2 w-full rounded-2xl border px-4 py-3 outline-none transition focus:border-black focus:ring-2 focus:ring-black/5"
-  />
+    onChange={(e) => setNewProvince(e.target.value)}
+    className="mt-2 w-full rounded-2xl border bg-white px-4 py-3 outline-none transition focus:border-black focus:ring-2 focus:ring-black/5"
+  >
+    <option value="">Seleziona provincia</option>
+    <option value="Trieste">Trieste</option>
+    <option value="Gorizia">Gorizia</option>
+    <option value="Udine">Udine</option>
+    <option value="Pordenone">Pordenone</option>
+  </select>
 </div>
 
 <div>
